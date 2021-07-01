@@ -5,6 +5,14 @@ using UnityEngine;
 
 namespace Conway
 {
+	public enum ECellType
+	{
+		Obstacle = -1,
+		Dead,
+		Alive,
+		Collectible
+	}
+
 	public class Cell
 	{
 		public int State;
@@ -13,24 +21,24 @@ namespace Conway
 
 	public class State
 	{
-		public System.Action<Vector2Int, int> OnCellChanged;
+		public System.Action<Vector2Int, ECellType> OnCellChanged;
 
 		public Vector2Int Size { get; private set; }
-		public int[,] Values { get; private set; }
+		public ECellType[,] Values { get; private set; }
 
 		public State(Vector2Int size)
 		{
 			Size = size;
-			Values = new int[size.x, size.y];
+			Values = new ECellType[size.x, size.y];
 		}
 
-		public void Set(Vector2Int p, int v)
+		public void Set(Vector2Int p, ECellType v)
 		{
 			Values[p.x, p.y] = v;
 			OnCellChanged?.Invoke(p, v);
 		}
 
-		public int Get(Vector2Int p)
+		public ECellType Get(Vector2Int p)
 		{
 			return Values[p.x, p.y];
 		}
@@ -47,7 +55,7 @@ namespace Conway
 		public State CurrentState { get; private set; }
 		public State PreviousState { get; private set; }
 
-		public System.Action<Vector2Int, int> OnCellChanged;
+		public System.Action<Vector2Int, ECellType> OnCellChanged;
 
 		public Board(Vector2Int size)
 		{
@@ -60,7 +68,7 @@ namespace Conway
 		{
 			public Board Board;
 			public Vector2Int Position;
-			public int State;
+			public ECellType State;
 		}
 
 		public void ForEachCell(System.Action<ForEachCellParams> function)
@@ -80,25 +88,41 @@ namespace Conway
 			}
 		}
 
-		public void SetCellCurrent(Vector2Int p, int v)
+		public void SetCellCurrent(Vector2Int p, ECellType v)
 		{
 			CurrentState.Set(p, v);
 			OnCellChanged?.Invoke(p, v);
 		}
 
-		public int GetCellCurrent(Vector2Int p)
+		public void SetCellPrevious(Vector2Int p, ECellType v)
+		{
+			PreviousState.Set(p, v);
+		}
+
+		public ECellType GetCellCurrent(Vector2Int p)
 		{
 			return CurrentState.Get(p);
 		}
 
-		public void ApplyRule(RuleBase rule)
+		public ECellType GetCellPrevious(Vector2Int p)
+		{
+			return PreviousState.Get(p);
+		}
+
+		public void SetCell(Vector2Int p, ECellType v)
+		{
+			SetCellCurrent(p, v);
+			SetCellPrevious(p, v);
+		}
+
+		public void ApplyRule(Rules.RuleBase rule)
 		{
 			ForEachCell(delegate(ForEachCellParams p)
 			{
 				int x = p.Position.x;
 				int y = p.Position.y;
 
-				int v = rule.Apply(this, x, y);
+				ECellType v = rule.Apply(this, x, y);
 				if (v == CurrentState.Get(p.Position))
 					return; 
 

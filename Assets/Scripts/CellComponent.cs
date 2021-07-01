@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using ECellType = Conway.ECellType;
 
 public class CellComponent : MonoBehaviour
 {
@@ -10,6 +11,7 @@ public class CellComponent : MonoBehaviour
 		set
 		{
 			_data = value;
+			UpdateState(_data.State);
 		}
 	}
 
@@ -28,20 +30,15 @@ public class CellComponent : MonoBehaviour
 		_renderer = GetComponent<SpriteRenderer>();
 	}
 
-	public void UpdateState(int state)
+	public void UpdateState(ECellType state)
 	{
+		_data.State = state;
 		_renderer.color = StateToColor(state);
 	}
 
-	private Color StateToColor(int state)
+	private Color StateToColor(ECellType state)
 	{
-		switch (state)
-		{
-			case -1: return Color.red;
-			case 0: return Color.white;
-			case 1: return Color.black;
-			default: return Color.white;
-		}
+		return Gameplay.LevelLoader.CellToColor(state);
 	}
 
 	public void OnMouseDown()

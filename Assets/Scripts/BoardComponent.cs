@@ -3,18 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Frictionless;
+using ECellType = Conway.ECellType;
 
 public class CellData
 {
-	public int State;
+	public ECellType State;
 	public Vector2Int Position;
-}
-
-public enum ECellType
-{
-	Dead,
-	Alive,
-	Obstacle = -1
 }
 
 public class CollectiblePool
@@ -30,12 +24,33 @@ public class CollectiblePool
 	{
 		_board  = board;
 		_prefab = prefab;
+		Collectibles = new Dictionary<Vector2Int, CellComponent>();
+	}
+
+	public void Generate(Conway.Board b)
+	{
+		b.ForEachCell(delegate(Conway.Board.ForEachCellParams p)
+		{
+			if (p.State != ECellType.Collectible)
+				return;
+
+			var collectible = SpawnCollectible(p.Position.x, p.Position.y);
+			Collectibles[p.Position] = collectible.GetComponent<CellComponent>(); 
+		});
+
+		b.OnCellChanged += Cb_OnCellChanged; 
+	}
+
+	public void Destroy()
+	{
+		foreach (var kvp in Collectibles)
+			GameObject.Destroy(kvp.Value.gameObject);
+
+		OnCollectiblesEnded = null;
 	}
 
 	public void GeneratePerlin(Conway.Board b)
 	{
-		Collectibles = new Dictionary<Vector2Int, CellComponent>();
-
 		b.ForEachCell(delegate(Conway.Board.ForEachCellParams p)
 		{
 			Vector2 coords;
@@ -44,7 +59,7 @@ public class CollectiblePool
 			float v = Mathf.PerlinNoise(coords.x, coords.y);
 
 			Debug.Log(v);
-			if (v > 0.75f)
+			if (v > 0.85f)
 			{
 				Debug.Log("Spawning collectible.");
 				var collectible = SpawnCollectible(p.Position.x, p.Position.y);
@@ -57,17 +72,16 @@ public class CollectiblePool
 
 	private GameObject SpawnCollectible(int x, int y)
 	{
+		Debug.Log($"Spawning collectible at {x}, {y}.");
 		var instance = GameObject.Instantiate(_prefab);
-		instance.transform.position = _board.GetPosition(new Vector2Int(x, y));
+		instance.transform.position = _board.GetPosition(new Vector2Int(x, y), -0.01f);
 		return instance;
 	}
 
-	private void Cb_OnCellChanged(Vector2Int p, int v)
+	private void Cb_OnCellChanged(Vector2Int p, ECellType v)
 	{
-		Debug.Log("Cell changed");
-		if (v != 1) return;
+		if (v != ECellType.Alive) return;
 		if (!Collectibles.ContainsKey(p)) return;
-		Debug.Log("Cell changed 2");
 
 		// Collectible obtained
 		GameObject.Destroy(Collectibles[p].gameObject);
@@ -91,16 +105,23 @@ public class BoardComponentMailbox
 	{
 		_b = c;
 		MessageRouter.AddHandler<Messages.UI.OnPlayButtonClick>(Cb_OnPlayButtonClick);
+		MessageRouter.AddHandler<Messages.UI.OnStepButtonClick>(Cb_OnStepButtonClick);
 	}
 
 	~BoardComponentMailbox()
 	{
 		MessageRouter.RemoveHandler<Messages.UI.OnPlayButtonClick>(Cb_OnPlayButtonClick);
+		MessageRouter.RemoveHandler<Messages.UI.OnStepButtonClick>(Cb_OnStepButtonClick);
 	}
 
 	private void Cb_OnPlayButtonClick(Messages.UI.OnPlayButtonClick msg)
 	{
 		_b.ToggleTimer();
+	}
+
+	private void Cb_OnStepButtonClick(Messages.UI.OnStepButtonClick msg)
+	{
+		_b.UpdateBoard();
 	}
 }
 
@@ -111,7 +132,11 @@ public class BoardComponent : MonoBehaviour
 	public ECellType CellBrush; 
 	public float Margin = 0f;
 
+	public Conway.Rules.Ruleset Ruleset;
+
 	public GameObject BrainPrefab;
+
+	public Data.Level Level;
 	private CollectiblePool _brainPool;
 
 	private CellComponent[,] Cells;
@@ -121,7 +146,7 @@ public class BoardComponent : MonoBehaviour
 
 	private float _stepTimer;
 	private Vector2 _cellSize;
-	private Vector2 startPosition
+	private Vector3 startPosition
 	{
 		get { return new Vector3(-_cellSize.x*Size.x/2, -_cellSize.y*Size.y/2, 0f); }
 	}
@@ -131,15 +156,28 @@ public class BoardComponent : MonoBehaviour
 
     void Start()
     {
-		Board = new Conway.Board(Size);
 		_mailbox = new BoardComponentMailbox(this);
-    	GenerateBoard(Board);
+		Conway.Board b = null;
+		if (Level == null)
+			b = new Conway.Board(Size);
+		else
+			b = Gameplay.LevelLoader.Load(Level);
+		GenerateBoard(b);
     }
 
 	void Update()
 	{
 		if (Input.GetKeyDown(KeyCode.A))
 			UpdateBoard();
+
+		if (Input.GetKeyDown(KeyCode.L) && Level != null)
+			GenerateBoard(Gameplay.LevelLoader.Load(Level));
+
+		if (Input.GetKeyDown(KeyCode.Space))
+			ToggleTimer();
+
+		if (Input.GetKeyDown(KeyCode.C))
+			GenerateBoard(new Conway.Board(Size));
 
 		if (!isPlaying)
 			return;
@@ -173,9 +211,14 @@ public class BoardComponent : MonoBehaviour
 
 	public void GenerateBoard(Conway.Board board)
 	{
-		Cells = new CellComponent[board.Size.x, board.Size.y];
+		if (Board != null)
+			DestroyBoard();
+
+		Board = board;
+
 		_cellSize = CellPrefab.GetComponent<SpriteRenderer>().sprite.bounds.size;
 
+		InstantiateCells(board.Size);
 		board.ForEachCell(delegate (Conway.Board.ForEachCellParams p)
 		{
 			int x = p.Position.x;
@@ -191,15 +234,15 @@ public class BoardComponent : MonoBehaviour
 				-sprSize.y*Size.y/2
 			);
 
-			var pos = new Vector3(sprSize.x*x, sprSize.y*y, 0f);
-			instance.transform.position = startPos + pos;
+			//var pos = new Vector3(sprSize.x*x, sprSize.y*y, 0f);
+			instance.transform.position = GetPosition(p.Position);
 
 			CellComponent cellComponent = instance.GetComponent<CellComponent>(); 
 			cellComponent.OnClicked += OnCellClicked;
 
 			CellData cellData     = new CellData();
-			cellData.Position     = new Vector2Int(x, y);
-			cellData.State        = 0;
+			cellData.Position     = p.Position;
+			cellData.State        = p.State;
 
 			cellComponent.Data = cellData; 
 			Cells[x, y] = cellComponent;
@@ -208,33 +251,65 @@ public class BoardComponent : MonoBehaviour
 		board.OnCellChanged += Cb_OnCellChanged;
 
 		_brainPool = new CollectiblePool(this, BrainPrefab);
-		_brainPool.GeneratePerlin(board);
+		_brainPool.Generate(board);
+		_brainPool.OnCollectiblesEnded += Cb_OnCollectiblesEnded;
 	}
 
-	public void Cb_OnCellChanged(Vector2Int p, int v)
+	private void DestroyBoard()
+	{
+		if (Board != null)
+		{
+			DestroyCells();
+			Board = null;
+		}
+
+		if (_brainPool != null)
+		{
+			_brainPool.Destroy();
+			_brainPool = null;
+		}
+	}
+
+	private void InstantiateCells(Vector2Int size)
+	{
+		Cells = new CellComponent[size.x, size.y];
+	}
+
+	private void DestroyCells()
+	{
+		if (Cells == null) return;
+		foreach (CellComponent cell in Cells)
+			GameObject.Destroy(cell.gameObject);
+		Cells = null;
+	}
+
+	public void Cb_OnCellChanged(Vector2Int p, ECellType v)
 	{
 		Cells[p.x, p.y].UpdateState(v);
+	}
+
+	public void Cb_OnCollectiblesEnded()
+	{
+		MessageRouter.RaiseMessage(new Messages.Gameplay.OnGameWon());
 	}
 
 	public void UpdateBoard()
 	{
 		Board.StepState();
-		Board.ApplyRule(new Conway.RuleConway());
-		Board.ApplyRule(new Conway.RuleMaintainCell(-1));
+		Ruleset.Apply(Board);
 	}
-
 
 	private void OnCellClicked(CellComponent.EventOnClicked evnt)
 	{
 		var cell = evnt.Cell;
-		int tv = (int)CellBrush;
-		int v = Board.GetCellCurrent(cell.Data.Position);
-		Board.SetCellCurrent(cell.Data.Position, tv);
+		ECellType v = Board.GetCellCurrent(cell.Data.Position);
+		Board.SetCellCurrent(cell.Data.Position, CellBrush);
 	}
 
-	public Vector3 GetPosition(Vector2Int p)
+	public Vector3 GetPosition(Vector2Int p, float zOffset=0f)
 	{
-		return startPosition + _cellSize * p; 
+		Vector2 pc = _cellSize * p;
+		return startPosition + new Vector3(pc.x, pc.y, 0f) + Vector3.forward * zOffset; 
 	}
 }
 
