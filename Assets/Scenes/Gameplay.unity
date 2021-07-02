@@ -933,6 +933,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e96946d607f2f405ea6a51728d813597, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AdjustZoom: 1
 --- !u!20 &519420031
 Camera:
   m_ObjectHideFlags: 0

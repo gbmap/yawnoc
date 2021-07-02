@@ -5,6 +5,34 @@ using Frictionless;
 
 namespace Messages
 {
+	namespace Command
+	{
+		public class PutCell
+		{
+			public Vector2Int Position;
+			public Conway.ECellType Type;
+		}
+
+		public class Play
+		{
+			public bool IsPlaying;
+		}
+
+		public class Step
+		{
+		}
+
+		public class SetStepSpeed
+		{
+			public float Speed;
+		}
+
+		public class SetCameraAcceleration
+		{
+			public Vector3 Acceleration;
+		}
+	}
+
 	namespace Board
 	{
 		public class OnBoardGenerated
