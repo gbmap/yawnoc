@@ -18,9 +18,9 @@ namespace Gameplay
 			
 		}
 		
-		public static Conway.Board Load(Data.Level level)
+		public static Conway.Board Load(Data.Level level, Conway.Rules.Ruleset rules)
 		{
-			return LoadBoardFromTexture(level.Texture);
+			return LoadBoardFromTexture(level.Texture, rules);
 		}
 
 		public static ECellType ColorToCell(Color color)
@@ -50,9 +50,9 @@ namespace Gameplay
 			return Mathf.Approximately(Vector4.Distance(a, b), 0.0f);
 		}
 
-		public static Conway.Board LoadBoardFromTexture(Texture2D texture)
+		public static Conway.Board LoadBoardFromTexture(Texture2D texture, Conway.Rules.Ruleset rules)
 		{
-			Conway.Board b = new Conway.Board(new Vector2Int(texture.width, texture.height));
+			Conway.Board b = new Conway.Board(new Vector2Int(texture.width, texture.height), rules);
 			for (int x = 0; x < texture.width; x++)
 			{
 				for (int y = 0; y < texture.height; y++)

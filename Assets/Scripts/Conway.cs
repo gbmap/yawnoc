@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+using Conway.Rules;
+
 namespace Conway
 {
 	public enum ECellType
@@ -54,14 +56,17 @@ namespace Conway
 		public Vector2Int Size = new Vector2Int(16, 16);
 		public State CurrentState { get; private set; }
 		public State PreviousState { get; private set; }
+		public Ruleset Ruleset { get; private set; }
 
 		public System.Action<Vector2Int, ECellType> OnCellChanged;
+		public System.Action<Board> OnStep;
 
-		public Board(Vector2Int size)
+		public Board(Vector2Int size, Ruleset rules)
 		{
 			Size 		  = size;
 			CurrentState  = new State(size);
 			PreviousState = new State(size);
+			Ruleset = rules;
 		}
 
 		public class ForEachCellParams
@@ -140,6 +145,9 @@ namespace Conway
 
 				PreviousState.Set(p.Position, CurrentState.Get(p.Position));
 			});
+
+			Ruleset?.Apply(this);
+			OnStep?.Invoke(this);
 		}
 	}
 

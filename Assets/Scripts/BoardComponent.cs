@@ -154,14 +154,21 @@ public class BoardComponent : MonoBehaviour
 	Conway.Board Board;
 	BoardComponentMailbox _mailbox;
 
+	public class OnBoardGeneratedParams
+	{
+		public BoardComponent Component;
+		public Conway.Board Board;
+	}
+	public System.Action<OnBoardGeneratedParams> OnBoardGenerated;
+
     void Start()
     {
 		_mailbox = new BoardComponentMailbox(this);
 		Conway.Board b = null;
 		if (Level == null)
-			b = new Conway.Board(Size);
+			b = new Conway.Board(Size, Ruleset);
 		else
-			b = Gameplay.LevelLoader.Load(Level);
+			b = Gameplay.LevelLoader.Load(Level, Ruleset);
 		GenerateBoard(b);
     }
 
@@ -171,13 +178,13 @@ public class BoardComponent : MonoBehaviour
 			UpdateBoard();
 
 		if (Input.GetKeyDown(KeyCode.L) && Level != null)
-			GenerateBoard(Gameplay.LevelLoader.Load(Level));
+			GenerateBoard(Gameplay.LevelLoader.Load(Level, Ruleset));
 
 		if (Input.GetKeyDown(KeyCode.Space))
 			ToggleTimer();
 
 		if (Input.GetKeyDown(KeyCode.C))
-			GenerateBoard(new Conway.Board(Size));
+			GenerateBoard(new Conway.Board(Size, Ruleset));
 
 		if (!isPlaying)
 			return;
@@ -218,41 +225,59 @@ public class BoardComponent : MonoBehaviour
 
 		_cellSize = CellPrefab.GetComponent<SpriteRenderer>().sprite.bounds.size;
 
-		InstantiateCells(board.Size);
-		board.ForEachCell(delegate (Conway.Board.ForEachCellParams p)
+		if (CellPrefab != null)
 		{
-			int x = p.Position.x;
-			int y = p.Position.y;
+			InstantiateCells(board.Size);
+			board.ForEachCell(delegate (Conway.Board.ForEachCellParams p)
+			{
+				int x = p.Position.x;
+				int y = p.Position.y;
 
-			Vector3 position = new Vector3(x, y);
-			var instance     = Instantiate(CellPrefab);
-			var sprite       = instance.GetComponent<SpriteRenderer>().sprite;
-			var sprSize      = sprite.bounds.size;
+				Vector3 position = new Vector3(x, y);
+				var instance     = Instantiate(CellPrefab);
+				var sprite       = instance.GetComponent<SpriteRenderer>().sprite;
+				var sprSize      = sprite.bounds.size;
 
-			var startPos     = new Vector3(
-				-sprSize.x*Size.x/2,
-				-sprSize.y*Size.y/2
-			);
+				var startPos     = new Vector3(
+					-sprSize.x*Size.x/2,
+					-sprSize.y*Size.y/2
+				);
 
-			//var pos = new Vector3(sprSize.x*x, sprSize.y*y, 0f);
-			instance.transform.position = GetPosition(p.Position);
+				//var pos = new Vector3(sprSize.x*x, sprSize.y*y, 0f);
+				instance.transform.position = GetPosition(p.Position);
 
-			CellComponent cellComponent = instance.GetComponent<CellComponent>(); 
-			cellComponent.OnClicked += OnCellClicked;
+				CellComponent cellComponent = instance.GetComponent<CellComponent>(); 
+				cellComponent.OnClicked += OnCellClicked;
 
-			CellData cellData     = new CellData();
-			cellData.Position     = p.Position;
-			cellData.State        = p.State;
+				CellData cellData     = new CellData();
+				cellData.Position     = p.Position;
+				cellData.State        = p.State;
 
-			cellComponent.Data = cellData; 
-			Cells[x, y] = cellComponent;
-		});
+				cellComponent.Data = cellData; 
+				Cells[x, y] = cellComponent;
+			});
+		}
 
 		board.OnCellChanged += Cb_OnCellChanged;
 
-		_brainPool = new CollectiblePool(this, BrainPrefab);
-		_brainPool.Generate(board);
-		_brainPool.OnCollectiblesEnded += Cb_OnCollectiblesEnded;
+		if (BrainPrefab != null)
+		{
+			_brainPool = new CollectiblePool(this, BrainPrefab);
+			_brainPool.Generate(board);
+			_brainPool.OnCollectiblesEnded += Cb_OnCollectiblesEnded;
+		}
+
+		OnBoardGenerated?.Invoke(new OnBoardGeneratedParams
+		{
+			Component = this,
+			Board = board
+		});
+
+		MessageRouter.RaiseMessage(new Messages.Board.OnBoardGenerated
+		{
+			Component = this,
+			Board = board
+		});
 	}
 
 	private void DestroyBoard()
@@ -285,6 +310,7 @@ public class BoardComponent : MonoBehaviour
 
 	public void Cb_OnCellChanged(Vector2Int p, ECellType v)
 	{
+		if (Cells == null) return;
 		Cells[p.x, p.y].UpdateState(v);
 	}
 
@@ -296,7 +322,6 @@ public class BoardComponent : MonoBehaviour
 	public void UpdateBoard()
 	{
 		Board.StepState();
-		Ruleset.Apply(Board);
 	}
 
 	private void OnCellClicked(CellComponent.EventOnClicked evnt)

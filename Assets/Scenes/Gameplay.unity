@@ -875,8 +875,9 @@ MonoBehaviour:
   CellPrefab: {fileID: 7965962546618108189, guid: 15c10c0a49cf181c1995d2ba1fea4dd7, type: 3}
   CellBrush: 1
   Margin: 0
+  Ruleset: {fileID: 11400000, guid: dc17d234f4b6fc611b101bff234d0f06, type: 2}
   BrainPrefab: {fileID: 1970765606315497304, guid: d62c29e5a26661feea821db3fbba26ba, type: 3}
-  Level: {fileID: 0}
+  Level: {fileID: 11400000, guid: 86f629a2980292c56b9a97879d081923, type: 2}
   isPlaying: 0
   stepWait: 0.1
 --- !u!4 &457125394
@@ -904,6 +905,7 @@ GameObject:
   - component: {fileID: 519420032}
   - component: {fileID: 519420031}
   - component: {fileID: 519420029}
+  - component: {fileID: 519420030}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -919,6 +921,18 @@ AudioListener:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 519420028}
   m_Enabled: 1
+--- !u!114 &519420030
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519420028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e96946d607f2f405ea6a51728d813597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!20 &519420031
 Camera:
   m_ObjectHideFlags: 0

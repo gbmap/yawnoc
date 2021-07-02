@@ -5,6 +5,15 @@ using Frictionless;
 
 namespace Messages
 {
+	namespace Board
+	{
+		public class OnBoardGenerated
+		{
+			public BoardComponent Component;
+			public Conway.Board Board;
+		}
+	}
+
 	namespace Gameplay
 	{
 		public class OnGameWon {}
@@ -20,6 +29,27 @@ namespace Messages
 			public OnStepButtonClick(int speed)
 			{
 				Speed = speed;
+			}
+		}
+	}
+
+	namespace Painter
+	{
+		public class OnPainterCreated 
+		{
+			public Conway.PainterComponent Painter { get; private set; }
+			public OnPainterCreated(Conway.PainterComponent c)
+			{
+				Painter = c;
+			}
+		}
+
+		public class OnPainterUpdated 
+		{
+			public Conway.PainterComponent Painter { get; private set; }
+			public OnPainterUpdated(Conway.PainterComponent c)
+			{
+				Painter = c;
 			}
 		}
 	}
