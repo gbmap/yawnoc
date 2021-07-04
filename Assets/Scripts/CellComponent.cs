@@ -38,21 +38,6 @@ public class CellComponent : MonoBehaviour
 
 	private Color StateToColor(ECellType state)
 	{
-		return Gameplay.LevelLoader.CellToColor(state);
-	}
-
-	public void OnMouseDown()
-	{
-		Debug.Log("Clicked");
-		int c = 0;
-		if (Input.GetMouseButtonDown(0))
-			c = 1;
-		else if (Input.GetMouseButtonDown(1))
-			c = 2;
-			
-		OnClicked?.Invoke(new EventOnClicked{
-			Cell = this,
-			MouseClick = c
-		});
+		return Gameplay.BoardLoader.CellToColor(state);
 	}
 }

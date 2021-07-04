@@ -56,12 +56,12 @@ namespace Conway
 		public Vector2Int Size = new Vector2Int(16, 16);
 		public State CurrentState { get; private set; }
 		public State PreviousState { get; private set; }
-		public Ruleset Ruleset { get; private set; }
+		public Ruleset Ruleset { get; set; }
 
 		public System.Action<Vector2Int, ECellType> OnCellChanged;
 		public System.Action<Board> OnStep;
 
-		public Board(Vector2Int size, Ruleset rules)
+		public Board(Vector2Int size, Ruleset rules=null)
 		{
 			Size 		  = size;
 			CurrentState  = new State(size);

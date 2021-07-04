@@ -20,6 +20,7 @@ namespace Messages
 
 		public class Step
 		{
+
 		}
 
 		public class SetStepSpeed
@@ -30,6 +31,51 @@ namespace Messages
 		public class SetCameraAcceleration
 		{
 			public Vector3 Acceleration;
+		}
+
+		public class SelectResource
+		{
+			public Conway.ECellType Resource;
+		}
+	}
+	
+	namespace Input
+	{
+		public class OnClick
+		{
+			public Vector3 Position;
+			public Vector3 WorldPosition;
+		}
+
+		public class OnClickUpdate
+		{
+			public Vector3 StartPosition;
+			public Vector3 StartWorldPosition;
+
+			public Vector3 Position;
+			public Vector3 WorldPosition;
+		}
+
+		public class OnHold
+		{
+			public Vector3 Position;
+			public Vector3 WorldPosition;
+			public Vector3 Delta;
+		}
+
+		public class OnSwipe
+		{
+			public Vector3 StartPosition;
+			public Vector3 EndPosition;
+			public Vector3 Delta;
+		}
+	}
+
+	namespace Builder
+	{
+		public class OnBuilderResourcesCreated
+		{
+			public List<Level.BuildResource> Resources;
 		}
 	}
 
@@ -46,6 +92,11 @@ namespace Messages
 	{
 		public class OnGameWon {}
 		public class OnGameLost {}
+
+		public class OnCellPlaced
+		{
+			public Conway.ECellType Cell;
+		}
 	}
 
 	namespace UI
@@ -58,6 +109,20 @@ namespace Messages
 			{
 				Speed = speed;
 			}
+		}
+
+		public class OnResourceSelected
+		{
+			public Conway.ECellType Type;
+		}
+	}
+
+	namespace Input
+	{
+		public class OnTouch 
+		{
+			public Vector2 ScreenPosition;
+			public Vector2 DeltaPosition;
 		}
 	}
 
@@ -84,10 +149,6 @@ namespace Messages
 
 	public class Postman : MonoBehaviour
 	{
-		void Awake()
-		{
-		}
-
 		public static Postman Get()
 		{
 			return FindObjectOfType<Postman>();

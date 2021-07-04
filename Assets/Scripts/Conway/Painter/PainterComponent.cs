@@ -54,7 +54,6 @@ namespace Conway
 		}
 	}
 
-	[RequireComponent(typeof(BoardComponent))]
 	public class PainterComponent : MonoBehaviour
 	{
 		public PainterConfigurationBase Config;
@@ -62,18 +61,20 @@ namespace Conway
 
 		BoardComponent _boardComponent;
 
-		void Awake()
+		void OnEnable()
 		{
-			_boardComponent = GetComponent<BoardComponent>();
-			if (_boardComponent == null) Destroy(this);
-
-			_boardComponent.OnBoardGenerated += Cb_OnBoardGenerated;
+			MessageRouter.AddHandler<Messages.Board.OnBoardGenerated>(Cb_OnBoardGenerated);
 		}
 
-		void Cb_OnBoardGenerated(BoardComponent.OnBoardGeneratedParams p)
+		void OnDisable()
 		{
-			Painter = new Painter(p.Board, Config);
-			p.Board.OnStep += Cb_OnStep;
+			MessageRouter.RemoveHandler<Messages.Board.OnBoardGenerated>(Cb_OnBoardGenerated);
+		}
+
+		void Cb_OnBoardGenerated(Messages.Board.OnBoardGenerated msg)
+		{
+			Painter = new Painter(msg.Board, Config);
+			msg.Board.OnStep += Cb_OnStep;
 
 			MessageRouter.RaiseMessage(new Messages.Painter.OnPainterCreated(this));
 		}

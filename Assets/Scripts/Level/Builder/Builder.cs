@@ -9,10 +9,18 @@ using ECellType = Conway.ECellType;
 */
 namespace Level
 {
-	public class BuildResource : ScriptableObject
+	[System.Serializable]
+	public class BuildResource 
 	{
 		public ECellType Type;
 		public int Count;
+	}
+
+	public class BuildResources : List<BuildResource> 
+	{
+		public BuildResources(List<BuildResource> resources)
+			: base(resources)
+		{}
 	}
 
 	public class Builder 

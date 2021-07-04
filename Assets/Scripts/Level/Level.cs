@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using BuildResource = Level.BuildResource;
 
 namespace Data
 {
@@ -9,5 +10,6 @@ namespace Data
 	{
 		public Gameplay.EMode Mode;
 		public Texture2D Texture;
+		public List<BuildResource> Resources;
 	}
 }

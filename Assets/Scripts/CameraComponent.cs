@@ -11,12 +11,12 @@ public class CameraComponent : MonoBehaviour
 	public Vector3 Acceleration;
 
 	[Range(0f, 1f)]
-	public float AccelerationDamping;
+	public float AccelerationDamping = 0.35f;
 
 	public Vector3 Velocity;
 
 	[Range(0f, 1f)]
-	public float VelocityDamping;
+	public float VelocityDamping = 0.35f;
 
 	void OnEnable()
 	{
@@ -58,7 +58,7 @@ public class CameraComponent : MonoBehaviour
 
 		transform.position += Velocity * Time.deltaTime;
 
-		GetComponent<Camera>().orthographicSize += Input.mouseScrollDelta.y;
+		GetComponent<Camera>().orthographicSize -= Input.mouseScrollDelta.y;
 
 		if (Input.touchCount == 0)
 			return;

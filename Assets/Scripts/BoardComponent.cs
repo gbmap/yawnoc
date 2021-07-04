@@ -127,49 +127,42 @@ public class BoardComponentMailbox
 
 public class BoardComponent : MonoBehaviour
 {
-	public Vector2Int Size = new Vector2Int(16, 16);
+	[Header("Definition")]
 	public GameObject CellPrefab;
-	public ECellType CellBrush; 
+	public GameObject BrainPrefab;
 	public float Margin = 0f;
 
-	public Conway.Rules.Ruleset Ruleset;
+	//[Header("Configuration")]
+	//public Conway.Rules.Ruleset Ruleset;
 
-	public GameObject BrainPrefab;
-
-	public Data.Level Level;
-	private CollectiblePool _brainPool;
-
-	private CellComponent[,] Cells;
-
+	[Header("Time")]
 	public bool isPlaying;
 	public float stepWait = 0.5f;
+
+	private CollectiblePool _brainPool;
+	private CellComponent[,] Cells;
 
 	private float _stepTimer;
 	private Vector2 _cellSize;
 	private Vector3 startPosition
 	{
-		get { return new Vector3(-_cellSize.x*Size.x/2, -_cellSize.y*Size.y/2, 0f); }
+		get { return new Vector3(-_cellSize.x*Board.Size.x/2, -_cellSize.y*Board.Size.y/2, 0f); }
 	}
 
 	Conway.Board Board;
 	BoardComponentMailbox _mailbox;
 
-	public class OnBoardGeneratedParams
-	{
-		public BoardComponent Component;
-		public Conway.Board Board;
-	}
-	public System.Action<OnBoardGeneratedParams> OnBoardGenerated;
-
     void Start()
     {
 		_mailbox = new BoardComponentMailbox(this);
+		/*
 		Conway.Board b = null;
 		if (Level == null)
 			b = new Conway.Board(Size, Ruleset);
 		else
-			b = Gameplay.LevelLoader.Load(Level, Ruleset);
+			b = Gameplay.BoardLoader.Load(Level, Ruleset);
 		GenerateBoard(b);
+		*/
     }
 
 	void Update()
@@ -177,14 +170,16 @@ public class BoardComponent : MonoBehaviour
 		if (Input.GetKeyDown(KeyCode.A))
 			UpdateBoard();
 
+		/*
 		if (Input.GetKeyDown(KeyCode.L) && Level != null)
-			GenerateBoard(Gameplay.LevelLoader.Load(Level, Ruleset));
-
-		if (Input.GetKeyDown(KeyCode.Space))
-			ToggleTimer();
+			GenerateBoard(Gameplay.BoardLoader.Load(Level, Ruleset));
 
 		if (Input.GetKeyDown(KeyCode.C))
 			GenerateBoard(new Conway.Board(Size, Ruleset));
+		*/
+
+		if (Input.GetKeyDown(KeyCode.Space))
+			ToggleTimer();
 
 		if (!isPlaying)
 			return;
@@ -239,21 +234,22 @@ public class BoardComponent : MonoBehaviour
 				var sprSize      = sprite.bounds.size;
 
 				var startPos     = new Vector3(
-					-sprSize.x*Size.x/2,
-					-sprSize.y*Size.y/2
+					-sprSize.x*board.Size.x/2,
+					-sprSize.y*board.Size.y/2
 				);
 
 				//var pos = new Vector3(sprSize.x*x, sprSize.y*y, 0f);
-				instance.transform.position = GetPosition(p.Position);
+				instance.transform.SetParent(transform);
+				instance.transform.localPosition = GetPosition(p.Position);
 
-				CellComponent cellComponent = instance.GetComponent<CellComponent>(); 
-				cellComponent.OnClicked += OnCellClicked;
 
 				CellData cellData     = new CellData();
 				cellData.Position     = p.Position;
 				cellData.State        = p.State;
 
+				CellComponent cellComponent = instance.GetComponent<CellComponent>(); 
 				cellComponent.Data = cellData; 
+				//cellComponent.OnClicked += OnCellClicked;
 				Cells[x, y] = cellComponent;
 			});
 		}
@@ -267,16 +263,10 @@ public class BoardComponent : MonoBehaviour
 			_brainPool.OnCollectiblesEnded += Cb_OnCollectiblesEnded;
 		}
 
-		OnBoardGenerated?.Invoke(new OnBoardGeneratedParams
-		{
-			Component = this,
-			Board = board
-		});
-
 		MessageRouter.RaiseMessage(new Messages.Board.OnBoardGenerated
 		{
-			Component = this,
-			Board = board
+			Component      = this,
+			Board 		   = board
 		});
 	}
 
@@ -324,12 +314,14 @@ public class BoardComponent : MonoBehaviour
 		Board.StepState();
 	}
 
+	/*
 	private void OnCellClicked(CellComponent.EventOnClicked evnt)
 	{
 		var cell = evnt.Cell;
 		ECellType v = Board.GetCellCurrent(cell.Data.Position);
 		Board.SetCellCurrent(cell.Data.Position, CellBrush);
 	}
+	*/
 
 	public Vector3 GetPosition(Vector2Int p, float zOffset=0f)
 	{
