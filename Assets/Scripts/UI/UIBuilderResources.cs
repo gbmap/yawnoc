@@ -22,17 +22,24 @@ namespace UI
 		void OnEnable()
 		{
 			MessageRouter.AddHandler<Messages.Builder.OnBuilderResourcesCreated>(Cb_OnResourcesCreated);
+			MessageRouter.AddHandler<Messages.Builder.OnBuilderResourceUpdated>(Cb_OnResourceUpdated);
 		}
 
 		void OnDisable()
 		{
 			MessageRouter.RemoveHandler<Messages.Builder.OnBuilderResourcesCreated>(Cb_OnResourcesCreated);
+			MessageRouter.RemoveHandler<Messages.Builder.OnBuilderResourceUpdated>(Cb_OnResourceUpdated);
 		}
 
-		void Cb_OnResourcesCreated(Messages.Builder.OnBuilderResourcesCreated msg)
+        void Cb_OnResourcesCreated(Messages.Builder.OnBuilderResourcesCreated msg)
 		{
-			SpawnUIResources(msg.Resources);
+            SpawnUIResources(msg.Resources, Conway.LevelLoader.Instance.Style);
 		}
+
+        void Cb_OnResourceUpdated(Messages.Builder.OnBuilderResourceUpdated obj)
+        {
+			_instances[obj.Resource.Type].SetResource(obj.Resource);
+        }
 
 		void ClearUIResources()
 		{
@@ -42,11 +49,13 @@ namespace UI
 			_instances.Clear();
 		}
 
-		void SpawnUIResources(List<Level.BuildResource> resources)
-		{
+		void SpawnUIResources(
+			List<Conway.Builder.BuildResource> resources,
+			Conway.Config.BoardStyle style
+		) {
 			ClearUIResources();
 
-			foreach (Level.BuildResource rsrc in resources)
+			foreach (Conway.Builder.BuildResource rsrc in resources)
 			{
 				var instance = Instantiate(UIBuilderResourcePrefab);
 				instance.transform.SetParent(this.transform);
@@ -56,6 +65,7 @@ namespace UI
 					resource = instance.AddComponent<UIResource>();
 
 				resource.Toggle.group = GetComponent<UnityEngine.UI.ToggleGroup>();
+				resource.Style = style;
 				resource.SetResource(rsrc);
 
 				_instances[rsrc.Type] = resource;

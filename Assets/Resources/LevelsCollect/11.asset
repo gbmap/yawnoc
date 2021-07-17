@@ -9,8 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f3f2018425aaf88498585fd7f86cea47, type: 3}
+  m_Script: {fileID: 11500000, guid: 675ee4715f5de7f0d80bc4a4768d4914, type: 3}
   m_Name: 11
   m_EditorClassIdentifier: 
   Mode: 0
+  Resources:
+  - Type: 1
+    Count: 1
   Texture: {fileID: 2800000, guid: 07e613d480c69a1bc9b83dc908db5ce5, type: 3}

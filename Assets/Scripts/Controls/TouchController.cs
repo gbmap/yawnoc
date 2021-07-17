@@ -3,12 +3,19 @@ using UnityEngine;
 using Frictionless;
 using Input = InputWrapper.Input;
 
+
 namespace Controls
 {
+	public enum EScreenArea
+	{
+		Menu,
+		Board
+	}
+
 	public class TouchController : MonoBehaviour
 	{
-		float clickStartTime;
-		float clickEndTime;
+		float   clickStartTime;
+		float   clickEndTime;
 		Vector2 startPosition;
 		Vector2 endPosition;
 

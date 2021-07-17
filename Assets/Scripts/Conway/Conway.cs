@@ -1,13 +1,10 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 using Conway.Rules;
 
 namespace Conway
 {
-	public enum ECellType
+    public enum ECellType
 	{
 		Obstacle = -1,
 		Dead,
@@ -23,8 +20,6 @@ namespace Conway
 
 	public class State
 	{
-		public System.Action<Vector2Int, ECellType> OnCellChanged;
-
 		public Vector2Int Size { get; private set; }
 		public ECellType[,] Values { get; private set; }
 
@@ -36,18 +31,29 @@ namespace Conway
 
 		public void Set(Vector2Int p, ECellType v)
 		{
+			if (!IsPositionValid(p)) 
+				return;
+
+			var oldValue = Values[p.x, p.y];
 			Values[p.x, p.y] = v;
-			OnCellChanged?.Invoke(p, v);
 		}
 
 		public ECellType Get(Vector2Int p)
 		{
+			if (!IsPositionValid(p)) 
+				return ECellType.Dead;
 			return Values[p.x, p.y];
 		}
 
 		public bool Compare(State other)
 		{
 			return false;
+		}
+
+		public bool IsPositionValid(Vector2Int p)
+		{
+			return p.x >= 0 && p.x < Size.x && 
+				p.y >= 0 && p.y < Size.y;
 		}
 	}
 
@@ -57,16 +63,27 @@ namespace Conway
 		public State CurrentState { get; private set; }
 		public State PreviousState { get; private set; }
 		public Ruleset Ruleset { get; set; }
+		public Config.BoardStyle Style { get; set; }
 
-		public System.Action<Vector2Int, ECellType> OnCellChanged;
+		public class OnCellChangedParams
+		{
+			public Vector2Int Position;
+			public ECellType  OldType;
+			public ECellType  NewType;
+		}
+		public System.Action<OnCellChangedParams> OnCellChanged;
 		public System.Action<Board> OnStep;
 
-		public Board(Vector2Int size, Ruleset rules=null)
-		{
+		public Board(
+			Vector2Int size, 
+			Ruleset rules=null,
+			Config.BoardStyle style=null
+		) {
 			Size 		  = size;
 			CurrentState  = new State(size);
 			PreviousState = new State(size);
-			Ruleset = rules;
+			Ruleset 	  = rules;
+			Style		  = style;
 		}
 
 		public class ForEachCellParams
@@ -95,8 +112,16 @@ namespace Conway
 
 		public void SetCellCurrent(Vector2Int p, ECellType v)
 		{
+			if (!CurrentState.IsPositionValid(p))
+				return;
+
+			var oldValue = CurrentState.Get(p);
 			CurrentState.Set(p, v);
-			OnCellChanged?.Invoke(p, v);
+			OnCellChanged?.Invoke(new OnCellChangedParams {
+				Position = p,
+				OldType = oldValue,
+				NewType = v
+			});
 		}
 
 		public void SetCellPrevious(Vector2Int p, ECellType v)
@@ -114,10 +139,14 @@ namespace Conway
 			return PreviousState.Get(p);
 		}
 
-		public void SetCell(Vector2Int p, ECellType v)
+		public bool SetCell(Vector2Int p, ECellType v)
 		{
+			if (!CurrentState.IsPositionValid(p)) 
+				return false;
+
 			SetCellCurrent(p, v);
 			SetCellPrevious(p, v);
+			return true;
 		}
 
 		public void ApplyRule(Rules.RuleBase rule)
@@ -131,8 +160,7 @@ namespace Conway
 				if (v == CurrentState.Get(p.Position))
 					return; 
 
-				CurrentState.Set(p.Position, v);
-				OnCellChanged?.Invoke(p.Position, v);
+				SetCellCurrent(p.Position, v);
 			});
 		}
 

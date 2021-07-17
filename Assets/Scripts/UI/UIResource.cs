@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using Frictionless;
+using Conway.Builder;
 
 namespace UI
 {
@@ -14,17 +15,28 @@ namespace UI
 		private UnityEngine.UI.Text _text;
 		public UnityEngine.UI.Image Icon;
 
-		private Level.BuildResource _resource;
-		public Level.BuildResource Resource 
+		private Conway.Builder.BuildResource _resource;
+		public Conway.Builder.BuildResource Resource 
 		{ 
 			get { return _resource; } 
 		}
 
-		public void SetResource(Level.BuildResource resource)
+		public Conway.Config.BoardStyle Style
+		{
+			get; set;
+		}
+
+		public void SetResource(
+			Conway.Builder.BuildResource resource)
 		{
 			_resource   = resource;
-			_text.text  = resource.Count.ToString();
-			Icon.color = Gameplay.BoardLoader.CellToColor(resource.Type);
+			Icon.color  = Style.GetColor(resource.Type); 
+			SetAmount(resource.Count);
+		}
+
+		public void SetAmount(int count)
+		{
+			_text.text = count.ToString();
 		}
 
 		void Awake()

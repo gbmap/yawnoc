@@ -15,6 +15,11 @@ public class CellComponent : MonoBehaviour
 		}
 	}
 
+	public Conway.Config.BoardStyle Style
+	{
+		get; set;
+	}
+
 	public class EventOnClicked
 	{
 		public CellComponent Cell;
@@ -38,6 +43,6 @@ public class CellComponent : MonoBehaviour
 
 	private Color StateToColor(ECellType state)
 	{
-		return Gameplay.BoardLoader.CellToColor(state);
+		return Style.GetColor(state);
 	}
 }

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Frictionless;
+using Conway.Builder;
 
 namespace Messages
 {
@@ -10,6 +11,12 @@ namespace Messages
 		public class PutCell
 		{
 			public Vector2Int Position;
+			public Conway.ECellType Type;
+		}
+
+		public class PutCellWorld
+		{
+			public Vector3 WorldPosition;
 			public Conway.ECellType Type;
 		}
 
@@ -75,7 +82,12 @@ namespace Messages
 	{
 		public class OnBuilderResourcesCreated
 		{
-			public List<Level.BuildResource> Resources;
+			public List<BuildResource> Resources;
+		}
+
+		public class OnBuilderResourceUpdated
+		{
+			public BuildResource Resource;
 		}
 	}
 
@@ -94,6 +106,11 @@ namespace Messages
 		public class OnGameLost {}
 
 		public class OnCellPlaced
+		{
+			public Conway.ECellType Cell;
+		}
+
+		public class OnCollectibleObtained
 		{
 			public Conway.ECellType Cell;
 		}

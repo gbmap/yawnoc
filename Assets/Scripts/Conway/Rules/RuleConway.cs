@@ -8,6 +8,9 @@ namespace Conway.Rules
 	[CreateAssetMenu(menuName="Conway/Rules/Conway", fileName="Conway")]
 	public class RuleConway : RuleBase
 	{
+		public ECellType Alive;
+		public ECellType Dead;
+
 		public override ECellType Apply(Board b, int cx, int cy)
 		{
 			Vector2Int cp = new Vector2Int(cx, cy);
@@ -29,17 +32,19 @@ namespace Conway.Rules
 						pp.y < 0 || pp.y >= b.Size.y)
 						continue;
 
-					liveNeighbors += Convert.ToInt32(b.PreviousState.Get(pp) == ECellType.Alive);
+					liveNeighbors += Convert.ToInt32(b.PreviousState.Get(pp) == Alive);
 				}
 			}
 
-			if (b.PreviousState.Get(cp) == ECellType.Alive) // alive
+			if (b.PreviousState.Get(cp) == Alive) // alive
 			{
-				return (ECellType)Convert.ToInt32(liveNeighbors >= 2 && liveNeighbors <= 3);
-			}
+				bool alive = (liveNeighbors >= 2 && liveNeighbors <= 3);
+				return  alive ? Alive : Dead;
+			} 
 			else
 			{
-				return (ECellType)Convert.ToInt32(liveNeighbors == 3);
+				bool alive = liveNeighbors == 3;
+				return alive ? Alive : b.GetCellPrevious(cp);
 			}
 		}
 	}

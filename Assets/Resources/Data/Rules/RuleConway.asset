@@ -12,3 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 698f5cf142fc8de209a4250b3d0b08b2, type: 3}
   m_Name: RuleConway
   m_EditorClassIdentifier: Assembly-CSharp:Conway:RuleConway
+  Alive: 1
+  Dead: 0

@@ -32,5 +32,11 @@ namespace UI
 			MessageRouter.RaiseMessage(new Messages.UI.OnStepButtonClick(0));
 		}
 
+		void DrawGizmos()
+		{
+			RectTransform t = GetComponent<RectTransform>();
+			//Gizmos.DrawWireCube(
+			//t.rect
+		}
 	}
 }

@@ -1,97 +1,13 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Frictionless;
 using ECellType = Conway.ECellType;
+using Conway;
 
 public class CellData
 {
 	public ECellType State;
 	public Vector2Int Position;
-}
-
-public class CollectiblePool
-{
-	public System.Action OnCollectiblesEnded;
-
-	private GameObject _prefab;
-	private Dictionary<Vector2Int, CellComponent> Collectibles;
-
-	private BoardComponent _board;
-
-	public CollectiblePool(BoardComponent board, GameObject prefab)
-	{
-		_board  = board;
-		_prefab = prefab;
-		Collectibles = new Dictionary<Vector2Int, CellComponent>();
-	}
-
-	public void Generate(Conway.Board b)
-	{
-		b.ForEachCell(delegate(Conway.Board.ForEachCellParams p)
-		{
-			if (p.State != ECellType.Collectible)
-				return;
-
-			var collectible = SpawnCollectible(p.Position.x, p.Position.y);
-			Collectibles[p.Position] = collectible.GetComponent<CellComponent>(); 
-		});
-
-		b.OnCellChanged += Cb_OnCellChanged; 
-	}
-
-	public void Destroy()
-	{
-		foreach (var kvp in Collectibles)
-			GameObject.Destroy(kvp.Value.gameObject);
-
-		OnCollectiblesEnded = null;
-	}
-
-	public void GeneratePerlin(Conway.Board b)
-	{
-		b.ForEachCell(delegate(Conway.Board.ForEachCellParams p)
-		{
-			Vector2 coords;
-			coords.x = ((float)p.Position.x / b.Size.x) * 100f;
-			coords.y = ((float)p.Position.y / b.Size.y) * 100f;
-			float v = Mathf.PerlinNoise(coords.x, coords.y);
-
-			Debug.Log(v);
-			if (v > 0.85f)
-			{
-				Debug.Log("Spawning collectible.");
-				var collectible = SpawnCollectible(p.Position.x, p.Position.y);
-				Collectibles[p.Position] = collectible.GetComponent<CellComponent>(); 
-			}
-		});
-
-		b.OnCellChanged += Cb_OnCellChanged; 
-	}
-
-	private GameObject SpawnCollectible(int x, int y)
-	{
-		Debug.Log($"Spawning collectible at {x}, {y}.");
-		var instance = GameObject.Instantiate(_prefab);
-		instance.transform.position = _board.GetPosition(new Vector2Int(x, y), -0.01f);
-		return instance;
-	}
-
-	private void Cb_OnCellChanged(Vector2Int p, ECellType v)
-	{
-		if (v != ECellType.Alive) return;
-		if (!Collectibles.ContainsKey(p)) return;
-
-		// Collectible obtained
-		GameObject.Destroy(Collectibles[p].gameObject);
-		Collectibles.Remove(p);
-
-		if (Collectibles.Count > 0)
-			return;
-
-		OnCollectiblesEnded?.Invoke();
-	}
 }
 
 /*
@@ -106,12 +22,18 @@ public class BoardComponentMailbox
 		_b = c;
 		MessageRouter.AddHandler<Messages.UI.OnPlayButtonClick>(Cb_OnPlayButtonClick);
 		MessageRouter.AddHandler<Messages.UI.OnStepButtonClick>(Cb_OnStepButtonClick);
+
+		MessageRouter.AddHandler<Messages.Command.PutCell>(Cb_PutCell); 
+		MessageRouter.AddHandler<Messages.Command.PutCellWorld>(Cb_PutCellWorld);
 	}
 
 	~BoardComponentMailbox()
 	{
 		MessageRouter.RemoveHandler<Messages.UI.OnPlayButtonClick>(Cb_OnPlayButtonClick);
 		MessageRouter.RemoveHandler<Messages.UI.OnStepButtonClick>(Cb_OnStepButtonClick);
+
+		MessageRouter.RemoveHandler<Messages.Command.PutCell>(Cb_PutCell);
+		MessageRouter.RemoveHandler<Messages.Command.PutCellWorld>(Cb_PutCellWorld);
 	}
 
 	private void Cb_OnPlayButtonClick(Messages.UI.OnPlayButtonClick msg)
@@ -122,6 +44,28 @@ public class BoardComponentMailbox
 	private void Cb_OnStepButtonClick(Messages.UI.OnStepButtonClick msg)
 	{
 		_b.UpdateBoard();
+	}
+
+	private void Cb_PutCell(Messages.Command.PutCell msg)
+	{
+		Debug.Log(msg.Position);
+		if (!_b.Board.SetCell(msg.Position, msg.Type))
+			return;
+
+		MessageRouter.RaiseMessage(new Messages.Gameplay.OnCellPlaced {
+			Cell = msg.Type
+		});
+	}
+
+	private void Cb_PutCellWorld(Messages.Command.PutCellWorld msg)
+	{
+		Vector2Int boardPosition = _b.WorldToBoard(msg.WorldPosition);
+		Debug.Log(msg.WorldPosition);
+
+		MessageRouter.RaiseMessage(new Messages.Command.PutCell {
+			Position = boardPosition,
+			Type = msg.Type
+		});
 	}
 }
 
@@ -139,17 +83,17 @@ public class BoardComponent : MonoBehaviour
 	public bool isPlaying;
 	public float stepWait = 0.5f;
 
-	private CollectiblePool _brainPool;
 	private CellComponent[,] Cells;
 
 	private float _stepTimer;
 	private Vector2 _cellSize;
+	public Vector2 CellSize { get { return _cellSize; } }
 	private Vector3 startPosition
 	{
 		get { return new Vector3(-_cellSize.x*Board.Size.x/2, -_cellSize.y*Board.Size.y/2, 0f); }
 	}
 
-	Conway.Board Board;
+	public Conway.Board Board { get; private set; }
 	BoardComponentMailbox _mailbox;
 
     void Start()
@@ -234,34 +178,27 @@ public class BoardComponent : MonoBehaviour
 				var sprSize      = sprite.bounds.size;
 
 				var startPos     = new Vector3(
-					-sprSize.x*board.Size.x/2,
-					-sprSize.y*board.Size.y/2
+					-sprSize.x*Mathf.Floor(board.Size.x/2),
+					-sprSize.y*Mathf.Floor(board.Size.y/2)
 				);
 
 				//var pos = new Vector3(sprSize.x*x, sprSize.y*y, 0f);
 				instance.transform.SetParent(transform);
 				instance.transform.localPosition = GetPosition(p.Position);
 
-
 				CellData cellData     = new CellData();
 				cellData.Position     = p.Position;
 				cellData.State        = p.State;
 
 				CellComponent cellComponent = instance.GetComponent<CellComponent>(); 
-				cellComponent.Data = cellData; 
+				cellComponent.Style = board.Style; 
+				cellComponent.Data  = cellData; 
 				//cellComponent.OnClicked += OnCellClicked;
 				Cells[x, y] = cellComponent;
 			});
 		}
 
 		board.OnCellChanged += Cb_OnCellChanged;
-
-		if (BrainPrefab != null)
-		{
-			_brainPool = new CollectiblePool(this, BrainPrefab);
-			_brainPool.Generate(board);
-			_brainPool.OnCollectiblesEnded += Cb_OnCollectiblesEnded;
-		}
 
 		MessageRouter.RaiseMessage(new Messages.Board.OnBoardGenerated
 		{
@@ -276,12 +213,6 @@ public class BoardComponent : MonoBehaviour
 		{
 			DestroyCells();
 			Board = null;
-		}
-
-		if (_brainPool != null)
-		{
-			_brainPool.Destroy();
-			_brainPool = null;
 		}
 	}
 
@@ -298,10 +229,11 @@ public class BoardComponent : MonoBehaviour
 		Cells = null;
 	}
 
-	public void Cb_OnCellChanged(Vector2Int p, ECellType v)
+	public void Cb_OnCellChanged(Conway.Board.OnCellChangedParams param)
 	{
 		if (Cells == null) return;
-		Cells[p.x, p.y].UpdateState(v);
+		var p = param.Position;
+		Cells[p.x, p.y].UpdateState(param.NewType);
 	}
 
 	public void Cb_OnCollectiblesEnded()
@@ -314,19 +246,28 @@ public class BoardComponent : MonoBehaviour
 		Board.StepState();
 	}
 
-	/*
-	private void OnCellClicked(CellComponent.EventOnClicked evnt)
+	public Vector2Int WorldToBoard(Vector3 position)
 	{
-		var cell = evnt.Cell;
-		ECellType v = Board.GetCellCurrent(cell.Data.Position);
-		Board.SetCellCurrent(cell.Data.Position, CellBrush);
+		var csz = new Vector3(_cellSize.x, -_cellSize.y)/ 2f;
+		Vector3 p = (position+csz) / _cellSize; 
+		var pi = new Vector2Int(Mathf.FloorToInt(p.x), Mathf.CeilToInt(p.y));
+		return (Board.Size/2) + pi;
 	}
-	*/
+
+	public Vector2 WorldToBoardF(Vector3 position)
+	{
+		var csz = new Vector3(_cellSize.x, -_cellSize.y)/ 2f;
+		Vector3 p = (position+csz) / _cellSize; 
+		Vector3 bsz = new Vector3(Board.Size.x, Board.Size.y, 0f);
+		return (bsz/2) + p;
+	}
 
 	public Vector3 GetPosition(Vector2Int p, float zOffset=0f)
 	{
 		Vector2 pc = _cellSize * p;
-		return startPosition + new Vector3(pc.x, pc.y, 0f) + Vector3.forward * zOffset; 
+		var forwardOffset = Vector3.forward * zOffset;
+		var pos = new Vector3(pc.x, pc.y, 0f);
+		return startPosition + pos + forwardOffset; 
 	}
 }
 
