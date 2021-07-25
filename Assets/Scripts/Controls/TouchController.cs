@@ -3,7 +3,6 @@ using UnityEngine;
 using Frictionless;
 using Input = InputWrapper.Input;
 
-
 namespace Controls
 {
 	public enum EScreenArea

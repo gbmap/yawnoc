@@ -12,12 +12,6 @@ namespace Conway
 		Collectible
 	}
 
-	public class Cell
-	{
-		public int State;
-		public Vector2Int Position;
-	}
-
 	public class State
 	{
 		public Vector2Int Size { get; private set; }

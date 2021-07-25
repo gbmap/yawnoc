@@ -21,6 +21,29 @@ public class BoardShader : MonoBehaviour
         material = renderer.material;
     }
 
+    void Update()
+    {
+        Vector3 cpos = Camera.main.transform.position;
+        cpos.z = 0f;
+        transform.position = cpos;
+        float ortho = Camera.main.orthographicSize*2f;
+        float aspect = Camera.main.aspect;
+        transform.localScale = new Vector3(ortho*aspect, ortho, 1f);
+    }
+
+    void FixedUpdate()
+    {
+        Vector3 cpos = Camera.main.transform.position;
+        cpos.z = 0f;
+        transform.position = cpos;
+        float ortho = Camera.main.orthographicSize*2f;
+        float aspect = Camera.main.aspect;
+        transform.localScale = new Vector3(ortho*aspect, ortho, 1f);
+
+        material.SetVector("_CameraPos", Camera.main.transform.position);
+        material.SetVector("_CameraSize", transform.localScale);
+    }
+
     // Start is called before the first frame update
     void OnEnable()
     {
@@ -40,12 +63,13 @@ public class BoardShader : MonoBehaviour
         component = msg.Component;
         texture = new Texture2D(board.Size.x, board.Size.y);
         texture.filterMode = FilterMode.Point;
+        texture.wrapMode = TextureWrapMode.Clamp;
         board.ForEachCell(delegate(Board.ForEachCellParams p)
         {
             texture.SetPixel(p.Position.x, p.Position.y, board.Style.GetColor(p.State));
         });
         texture.Apply();
-
+        
         Vector3 csz = msg.Component.CellSize;
         Vector2Int bsz = msg.Board.Size;
 
@@ -59,13 +83,14 @@ public class BoardShader : MonoBehaviour
         float y = csz.y / board.Size.y;
 
         material.SetTexture("_Board", texture);
-        material.SetVector("_CellSize", new Vector2(x,y));
+        material.SetVector("_CellSize", csz);
+        material.SetVector("_BoardSize", new Vector2(board.Size.x, board.Size.y));
     }
 
     private void Cb_OnCellChanged(Board.OnCellChangedParams obj)
     {
         texture.SetPixel(obj.Position.x, obj.Position.y, board.Style.GetColor(obj.NewType));
-        //texture.Apply();
+        texture.Apply();
     }
 
     private void Cb_OnStep(Board b)

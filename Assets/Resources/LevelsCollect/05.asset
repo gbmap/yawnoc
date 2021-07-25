@@ -13,5 +13,7 @@ MonoBehaviour:
   m_Name: 05
   m_EditorClassIdentifier: 
   Mode: 0
-  Resources: []
+  Resources:
+  - Type: 1
+    Count: 3
   Texture: {fileID: 2800000, guid: f559686de684c9049b491042763dc312, type: 3}

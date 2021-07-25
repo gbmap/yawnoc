@@ -248,16 +248,14 @@ public class BoardComponent : MonoBehaviour
 
 	public Vector2Int WorldToBoard(Vector3 position)
 	{
-		var csz = new Vector3(_cellSize.x, -_cellSize.y)/ 2f;
-		Vector3 p = (position+csz) / _cellSize; 
-		var pi = new Vector2Int(Mathf.FloorToInt(p.x), Mathf.CeilToInt(p.y));
-		return (Board.Size/2) + pi;
+		var bp  = WorldToBoardF(position);
+		return new Vector2Int(Mathf.FloorToInt(bp.x), Mathf.FloorToInt(bp.y));
 	}
 
 	public Vector2 WorldToBoardF(Vector3 position)
 	{
-		var csz = new Vector3(_cellSize.x, -_cellSize.y)/ 2f;
-		Vector3 p = (position+csz) / _cellSize; 
+		var csz = new Vector3(_cellSize.x, _cellSize.y)/ 2f;
+		Vector3 p = (position) / _cellSize; 
 		Vector3 bsz = new Vector3(Board.Size.x, Board.Size.y, 0f);
 		return (bsz/2) + p;
 	}
