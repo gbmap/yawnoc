@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using Frictionless;
 using Input = InputWrapper.Input;
@@ -20,15 +19,28 @@ namespace Controls
 
 		bool lastClickState;
 		bool hasFiredHoldEvent;
+
+		float _lastZoomDistance;
 		
 		void Update()
 		{
+			if (Input.GetKey(KeyCode.P))
+			{
+				MessageRouter.RaiseMessage(new Messages.Input.OnPinch
+				{
+					DeltaDistance = 10f * Time.deltaTime
+				});
+			}
+
 			if (Input.touchCount == 0)
 			{
 				if (lastClickState)
 					StopTouch();
 				return;
 			}
+
+			if (CheckZoom())
+				return;
 
 			Touch touch = Input.GetTouch(0);
 			if (!lastClickState)
@@ -37,6 +49,31 @@ namespace Controls
 				UpdateTouch(touch);
 
 			lastClickState = true;
+
+		
+		}
+
+		bool CheckZoom()
+		{
+			if (Input.touchCount < 2)
+			{
+				_lastZoomDistance = Mathf.NegativeInfinity;
+				return false;
+			}
+
+			var touchA = Input.GetTouch(0);
+			var touchB = Input.GetTouch(1);
+
+			Vector3 posA = Camera.main.ScreenToViewportPoint(touchA.position);
+			Vector3 posB = Camera.main.ScreenToViewportPoint(touchB.position);
+
+			float distance = Vector3.Distance(posA, posB);
+			float deltaDistance = distance - _lastZoomDistance;
+			MessageRouter.RaiseMessage(new Messages.Input.OnPinch
+			{
+				DeltaDistance = distance * 10f
+			});
+			return true;
 		}
 
 		void StartTouch(Touch touch)
@@ -83,7 +120,7 @@ namespace Controls
 		{
 			MessageRouter.RaiseMessage(new Messages.Input.OnClick
 			{
-				Position      = position,
+				ScreenPosition = position,
 				WorldPosition = Camera.main.ScreenToWorldPoint(position)
 			});
 			Debug.Log("Click");

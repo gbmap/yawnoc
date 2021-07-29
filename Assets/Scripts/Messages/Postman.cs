@@ -8,6 +8,12 @@ namespace Messages
 {
 	namespace Command
 	{
+		public class SelectCell
+		{
+			public Vector2Int Position;
+			public Conway.ECellType Type;
+		}
+
 		public class PutCell
 		{
 			public Vector2Int Position;
@@ -40,6 +46,11 @@ namespace Messages
 			public Vector3 Acceleration;
 		}
 
+		public class AddCameraZoomAcceleration
+		{
+			public float Value;
+		}
+
 		public class SelectResource
 		{
 			public Conway.ECellType Resource;
@@ -50,7 +61,7 @@ namespace Messages
 	{
 		public class OnClick
 		{
-			public Vector3 Position;
+			public Vector3 ScreenPosition;
 			public Vector3 WorldPosition;
 		}
 
@@ -75,6 +86,11 @@ namespace Messages
 			public Vector3 StartPosition;
 			public Vector3 EndPosition;
 			public Vector3 Delta;
+		}
+
+		public class OnPinch
+		{
+			public float DeltaDistance;
 		}
 	}
 

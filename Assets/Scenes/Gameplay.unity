@@ -671,6 +671,10 @@ MonoBehaviour:
   AccelerationDamping: 0.35
   Velocity: {x: 0, y: 0, z: 0}
   VelocityDamping: 0.35
+  Zoom: 0
+  ZoomAcceleration: 0
+  ZoomVelocity: 0
+  ZoomDamping: 0.35
 --- !u!20 &519420031
 Camera:
   m_ObjectHideFlags: 0
@@ -1641,6 +1645,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Brush: 0
+  behaviour: 0
 --- !u!4 &1843711824
 Transform:
   m_ObjectHideFlags: 0
@@ -2114,7 +2119,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9109306272277136763, guid: 4e0cb71a2efa58aa2ac8f3e5b7ba7b96, type: 3}
       propertyPath: m_Text
-      value: '>'
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 9109306273622196404, guid: 4e0cb71a2efa58aa2ac8f3e5b7ba7b96, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
@@ -2232,5 +2237,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Play
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 9109306272277136763, guid: 4e0cb71a2efa58aa2ac8f3e5b7ba7b96, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 4e0cb71a2efa58aa2ac8f3e5b7ba7b96, type: 3}

@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using Frictionless;
 using Input = InputWrapper.Input;
+using Messages.Input;
+using System;
 
+[RequireComponent(typeof(Camera))]
 public class CameraComponent : MonoBehaviour
 {
 	public bool AdjustZoom = true;
@@ -18,19 +21,40 @@ public class CameraComponent : MonoBehaviour
 	[Range(0f, 1f)]
 	public float VelocityDamping = 0.35f;
 
+	public float Zoom;
+
+	[Range(0f, 1f)]
+	public float ZoomAcceleration;
+
+	[Range(0f, 1f)]
+	public float ZoomVelocity;
+
+	[Range(0f, 1f)]
+	public float ZoomDamping = 0.35f;
+
+	Camera _camera;
+
+	void Awake()
+	{
+		_camera = GetComponent<Camera>();
+	}
+
 	void OnEnable()
 	{
 		MessageRouter.AddHandler<Messages.Board.OnBoardGenerated>(Cb_OnBoardGenerated);
 		MessageRouter.AddHandler<Messages.Command.SetCameraAcceleration>(Cb_SetCameraAcceleration);
+		MessageRouter.AddHandler<Messages.Input.OnPinch>(Cb_OnPinch);
 	}
 
 	void OnDisable()
 	{
 		MessageRouter.RemoveHandler<Messages.Board.OnBoardGenerated>(Cb_OnBoardGenerated);
 		MessageRouter.RemoveHandler<Messages.Command.SetCameraAcceleration>(Cb_SetCameraAcceleration);
+		MessageRouter.RemoveHandler<Messages.Input.OnPinch>(Cb_OnPinch);
 	}
 
-	private void Cb_OnBoardGenerated(Messages.Board.OnBoardGenerated msg)
+
+    private void Cb_OnBoardGenerated(Messages.Board.OnBoardGenerated msg)
 	{
 		Vector3 newPos = msg.Component.GetPosition(msg.Board.Size/2);
 		newPos.z = transform.position.z;
@@ -39,13 +63,11 @@ public class CameraComponent : MonoBehaviour
 		if (!AdjustZoom) 
 			return;
 
-		GetComponent<Camera>().orthographicSize = msg.Board.Size.y;
+		_camera.orthographicSize = msg.Board.Size.y;
 	}
 
 	private void Cb_SetCameraAcceleration(Messages.Command.SetCameraAcceleration msg)
 	{
-		Debug.Log(msg.Acceleration);
-		//Velocity = msg.Velocity;
 		Acceleration = msg.Acceleration;
 	}
 
@@ -58,21 +80,26 @@ public class CameraComponent : MonoBehaviour
 
 		transform.position += Velocity * Time.deltaTime;
 
-		GetComponent<Camera>().orthographicSize -= Input.mouseScrollDelta.y;
+		//ZoomAcceleration -= Input.mouseScrollDelta.y;
+
+		ZoomVelocity 	 += ZoomAcceleration;
+		ZoomVelocity 	 *= 1f - ZoomDamping;
+		ZoomAcceleration *= 1f - ZoomDamping;
+		_camera.orthographicSize += ZoomVelocity * Time.deltaTime;
+		Debug.Log(_camera.orthographicSize);
 
 		if (Input.touchCount == 0)
 			return;
 
 		Touch touch = Input.GetTouch(0);
-		Debug.Log("!!!");
 
 		Vector3 acc = -touch.deltaPosition;
-
-		// Don't think about it
-		MessageRouter.RaiseMessage(new Messages.Command.SetCameraAcceleration
-		{
-			Acceleration = acc
-		});
+		Acceleration = acc;
     }
 
+    private void Cb_OnPinch(OnPinch obj)
+    {
+		Debug.Log("Pinch.");
+		ZoomAcceleration = obj.DeltaDistance;
+    }
 }

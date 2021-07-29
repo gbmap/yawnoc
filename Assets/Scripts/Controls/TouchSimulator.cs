@@ -21,6 +21,14 @@ namespace InputWrapper {
             return UnityEngine.Input.GetButtonUp(buttonName);
         }
 
+        public static bool GetKeyDown(KeyCode key) {
+            return UnityEngine.Input.GetKeyDown(key);
+        }
+
+        public static bool GetKey(KeyCode key) {
+            return UnityEngine.Input.GetKey(key);
+        }
+
         public static bool GetMouseButton(int button) {
             return UnityEngine.Input.GetMouseButton(button);
         }

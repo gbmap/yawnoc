@@ -3,6 +3,8 @@ using UnityEngine;
 using Frictionless;
 using ECellType = Conway.ECellType;
 using Conway;
+using Messages.Input;
+using System;
 
 public class CellData
 {
@@ -25,6 +27,8 @@ public class BoardComponentMailbox
 
 		MessageRouter.AddHandler<Messages.Command.PutCell>(Cb_PutCell); 
 		MessageRouter.AddHandler<Messages.Command.PutCellWorld>(Cb_PutCellWorld);
+
+		MessageRouter.AddHandler<Messages.Input.OnClick>(Cb_OnClick);
 	}
 
 	~BoardComponentMailbox()
@@ -34,9 +38,26 @@ public class BoardComponentMailbox
 
 		MessageRouter.RemoveHandler<Messages.Command.PutCell>(Cb_PutCell);
 		MessageRouter.RemoveHandler<Messages.Command.PutCellWorld>(Cb_PutCellWorld);
+
+		MessageRouter.RemoveHandler<Messages.Input.OnClick>(Cb_OnClick);
 	}
 
-	private void Cb_OnPlayButtonClick(Messages.UI.OnPlayButtonClick msg)
+    private void Cb_OnClick(OnClick obj)
+    {
+		Vector2Int pos = _b.WorldToBoard(obj.WorldPosition); 
+		if (!_b.IsInsideBoard(pos))
+		{
+			Debug.Log("Not inside board.");
+			return; 
+		}
+
+		MessageRouter.RaiseMessage(new Messages.Command.SelectCell {
+			Position = pos,
+			Type = _b.Board.GetCellCurrent(pos)
+		});
+    }
+
+    private void Cb_OnPlayButtonClick(Messages.UI.OnPlayButtonClick msg)
 	{
 		_b.ToggleTimer();
 	}
@@ -99,28 +120,12 @@ public class BoardComponent : MonoBehaviour
     void Start()
     {
 		_mailbox = new BoardComponentMailbox(this);
-		/*
-		Conway.Board b = null;
-		if (Level == null)
-			b = new Conway.Board(Size, Ruleset);
-		else
-			b = Gameplay.BoardLoader.Load(Level, Ruleset);
-		GenerateBoard(b);
-		*/
     }
 
 	void Update()
 	{
 		if (Input.GetKeyDown(KeyCode.A))
 			UpdateBoard();
-
-		/*
-		if (Input.GetKeyDown(KeyCode.L) && Level != null)
-			GenerateBoard(Gameplay.BoardLoader.Load(Level, Ruleset));
-
-		if (Input.GetKeyDown(KeyCode.C))
-			GenerateBoard(new Conway.Board(Size, Ruleset));
-		*/
 
 		if (Input.GetKeyDown(KeyCode.Space))
 			ToggleTimer();
@@ -266,6 +271,12 @@ public class BoardComponent : MonoBehaviour
 		var forwardOffset = Vector3.forward * zOffset;
 		var pos = new Vector3(pc.x, pc.y, 0f);
 		return startPosition + pos + forwardOffset; 
+	}
+
+	public bool IsInsideBoard(Vector2Int p)
+	{
+		return p.x >= 0 && p.x < Board.Size.x &&
+			   p.y >= 0 && p.y < Board.Size.y;	
 	}
 }
 

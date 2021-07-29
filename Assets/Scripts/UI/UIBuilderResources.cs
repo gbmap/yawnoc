@@ -59,6 +59,7 @@ namespace UI
 			{
 				var instance = Instantiate(UIBuilderResourcePrefab);
 				instance.transform.SetParent(this.transform);
+				instance.transform.localScale = Vector3.one;
 
 				var resource = instance.GetComponent<UIResource>();
 				if (resource == null)

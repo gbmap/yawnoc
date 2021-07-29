@@ -5,6 +5,7 @@ using Frictionless;
 using Conway;
 using System;
 using Messages.Input;
+using Messages.Command;
 
 public class BoardShader : MonoBehaviour
 {
@@ -49,12 +50,14 @@ public class BoardShader : MonoBehaviour
     {
         MessageRouter.AddHandler<Messages.Board.OnBoardGenerated>(Cb_OnBoardGenerated);
         MessageRouter.AddHandler<Messages.Input.OnClick>(Cb_OnClick);
+        MessageRouter.AddHandler<Messages.Command.SelectCell>(Cb_OnCellSelected);
     }
 
     void OnDisable()
     {
         MessageRouter.RemoveHandler<Messages.Board.OnBoardGenerated>(Cb_OnBoardGenerated);
         MessageRouter.RemoveHandler<Messages.Input.OnClick>(Cb_OnClick);
+        MessageRouter.RemoveHandler<Messages.Command.SelectCell>(Cb_OnCellSelected);
     }
 
     void Cb_OnBoardGenerated(Messages.Board.OnBoardGenerated msg)
@@ -103,5 +106,12 @@ public class BoardShader : MonoBehaviour
     {
         material.SetFloat("_ClickTime", Time.time);
         material.SetVector("_ClickPos", component.WorldToBoardF(obj.WorldPosition)/board.Size);
+        Vector3 pos = component.WorldToBoardF(obj.WorldPosition);
     }
+
+    private void Cb_OnCellSelected(SelectCell obj)
+    {
+        material.SetVector("_SelectedCell", new Vector2(obj.Position.x, obj.Position.y));
+    }
+
 }

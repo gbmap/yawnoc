@@ -14,6 +14,8 @@ Shader "Unlit/S_UIButton"
         _ColorMask ("Color Mask", Float) = 15
 
         [Toggle(UNITY_UI_ALPHACLIP)] _UseUIAlphaClip ("Use Alpha Clip", Float) = 0
+
+        _Button ("Button", Float) = 0.0
     }
     SubShader
     {
@@ -77,6 +79,7 @@ Shader "Unlit/S_UIButton"
             fixed4 _TextureSampleAdd;
             float4 _ClipRect;
             float4 _MainTex_ST;
+            float _Button;
 
             v2f vert(appdata_t v)
             {
@@ -90,6 +93,31 @@ Shader "Unlit/S_UIButton"
 
                 OUT.color = v.color * _Color;
                 return OUT;
+            }
+
+            float btn_play(fixed2 uv)
+            {
+                uv = (uv-.5)*2.;
+                uv.y *= 2.;
+                uv *= 3.;
+                uv.y += .3;
+                uv.x += .3;
+
+                // uv.x += 0.075;
+                // uv.x *= 2.;
+                // uv.y *= 4.;
+                float a = radians(35.);
+                float a2 = radians(-35.);
+                float tp = smoothstep(0.0, 0.15, 1.-dot(uv, fixed2(cos(a), sin(a)))); 
+                float bt = smoothstep(0.0, 0.15, 1.-dot(uv, fixed2(cos(a2), sin(a2))));
+
+                return tp * bt * step(-.4, uv.x); // (bt, tp);
+            }
+
+            float btn_step(fixed2 uv)
+            {
+                float btn = btn_play(uv);
+                return max(0., btn - btn_play(uv+fixed2(0.1, 0.)));
             }
 
             fixed4 frag(v2f IN) : SV_Target
@@ -106,10 +134,18 @@ Shader "Unlit/S_UIButton"
 
                 // border
                 fixed2 uv = IN.texcoord;
-                float thck = 0.02;
+                float thck = fwidth(IN.texcoord);
                 fixed2 stp = step(1.-thck, uv) + step(uv, thck);
                 float bord = max(stp.x, stp.y);
                 color += fixed4(1.,1.,1.,0.) * bord;
+
+                if (_Button >= 0. && _Button <= .5)
+                    color += fixed4(1.,1.,1.,0.) * btn_play(IN.texcoord);
+                else if (_Button >= .5 && _Button <= 1.5)
+                    color += fixed4(1.,1.,1.,0.) * btn_step(IN.texcoord);
+
+                color.r += 1. - step(0.01, abs(frac(uv.x*3.-.5)));
+                color.g += 1. - step(0.01, abs(frac(uv.y*3.-.5)));
                 
 
                 return color;
