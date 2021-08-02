@@ -3,15 +3,16 @@ Shader "Unlit/Board"
     Properties
     {
         _Board ("Texture", 2D) = "white" {}
+        _PainterTexture("Painter Texture", 2D) = "white" {}
         _CameraPos ("Camera Position", Vector) = (0, 0, 0, 0)
-        _CameraSize("Camera Size", Vector) = (0, 0, 0, 0)
-        _BoardSize("Board Size", Vector) = (1,1,1,1)
-        _CellSize("Cell Size", Vector) = (1, 1, 1, 1)
-        _ClickTime("Click Time", Float) = 0.0
-        _ClickPos("Click Position", Vector) = (1, 1, 1, 1)
-        _GridColor("Grid Color", Color) = (0.1,0.1,0.1,1.0)
-        _BorderColor("Border Color", Color) = (1.0, 1.0, 1.0, 1.0)
-        _MousePos("Mouse Position", Vector) = (0.0, 0.0, 0.0, 0.0)
+        _CameraSize("Camera Size", Vector)     = (0, 0, 0, 0)
+        _BoardSize("Board Size", Vector)       = (1,1,1,1)
+        _CellSize("Cell Size", Vector)         = (1, 1, 1, 1)
+        _ClickTime("Click Time", Float)        = 0.0
+        _ClickPos("Click Position", Vector)    = (1, 1, 1, 1)
+        _GridColor("Grid Color", Color)        = (0.1,0.1,0.1,1.0)
+        _BorderColor("Border Color", Color)    = (1.0, 1.0, 1.0, 1.0)
+        _MousePos("Mouse Position", Vector)    = (0.0, 0.0, 0.0, 0.0)
     }
     SubShader
     {
@@ -23,10 +24,10 @@ Shader "Unlit/Board"
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            // make fog work
             #pragma multi_compile_fog
 
             #include "UnityCG.cginc"
+            #include "Yawnoc.cginc"
 
             struct appdata
             {
@@ -42,6 +43,9 @@ Shader "Unlit/Board"
 
             sampler2D _Board;
             float4    _Board_ST;
+
+            sampler2D _PainterTexture;
+            float4    _PainterTexture_ST;
 
             float4 _CellSize;
             float2 _BoardSize;
@@ -134,11 +138,24 @@ Shader "Unlit/Board"
                 return col;
             }
 
+            fixed4 txtr_painter(fixed2 board_uv)
+            {
+                fixed4 col = tex2D(_PainterTexture, board_uv);
+                fixed3 rgb = RGBtoHSV(col.rgb);
+                rgb.r      = frac(rgb.r+_Time.x);
+                col.rgb    = HSVtoRGB(rgb);
+                col.rgb *= .5;
+                col.a = 1.;
+
+                return saturate(col);
+            }
+
             float dst_board_border(fixed2 board_uv)
             {
+                fixed2 dd = fwidth(board_uv)*5.;
                 fixed2 stp  = step(1.00, board_uv) + step(board_uv, 0.00); 
                 float sqr1 = max(stp.x, stp.y);
-                fixed2 stp2 = step(1.02, board_uv) + step(board_uv, -0.02);
+                fixed2 stp2 = step(1.00 + dd, board_uv) + step(board_uv, -dd);
                 float sqr2 = max(stp2.x, stp2.y);
                 return sqr1 - sqr2;
             }
@@ -146,7 +163,12 @@ Shader "Unlit/Board"
             fixed4 frag (v2f i) : SV_Target
             {
                 fixed2 uv_brd = uv_board(i.uv);
-                fixed4 col = txtr_board(saturate(uv_brd));
+                fixed4 col = txtr_painter(saturate(uv_brd));
+
+                fixed4 board_clr = txtr_board(saturate(uv_brd));
+                float t_brd      = length(board_clr.rgb);
+                t_brd            = step(0.1, t_brd);
+                col = lerp(col, board_clr, t_brd);
 
                 float grid = dst_grid(uv_brd);
                 fixed4 clr = max(col, _GridColor*(1.-grid));

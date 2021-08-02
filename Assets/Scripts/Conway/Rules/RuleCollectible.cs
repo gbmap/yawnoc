@@ -13,11 +13,10 @@ namespace Conway.Rules
 		public override ECellType Apply(Board b, int x, int y)
 		{
             if (Reward == ECellType.Dead) 
-                return b.GetCellCurrent(new Vector2Int(x, y));
+                return b.CurrentState.Get(x, y);
 
-			Vector2Int p = new Vector2Int(x, y);
-			if (b.GetCellPrevious(p) == Type &&
-				b.GetCellCurrent(p) == Collector)
+			if (b.PreviousState.Get(x, y) == Type &&
+				b.CurrentState.Get(x, y) == Collector)
 			{
 				MessageRouter.RaiseMessage(
 					new Messages.Gameplay.OnCollectibleObtained {
@@ -25,7 +24,7 @@ namespace Conway.Rules
 				});
 			}
 
-			return b.GetCellCurrent(new Vector2Int(x, y));
+			return b.CurrentState.Get(x, y);
 		}
 	}
 }

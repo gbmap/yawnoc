@@ -15,7 +15,10 @@ Shader "Unlit/S_UIButton"
 
         [Toggle(UNITY_UI_ALPHACLIP)] _UseUIAlphaClip ("Use Alpha Clip", Float) = 0
 
-        _Button ("Button", Float) = 0.0
+        _UseBorder ("Use Border", Int) = 0
+        _UVScale ("UV Scale", Float) = 2
+        [PerRendererData] _Button ("Button", Int) = 0
+        [PerRendererData] _Selected ("Selected", Int) = 0
     }
     SubShader
     {
@@ -53,6 +56,7 @@ Shader "Unlit/S_UIButton"
 
             #include "UnityCG.cginc"
             #include "UnityUI.cginc"
+            #include "Yawnoc.cginc"
 
             #pragma multi_compile_local _ UNITY_UI_CLIP_RECT
             #pragma multi_compile_local _ UNITY_UI_ALPHACLIP
@@ -75,11 +79,14 @@ Shader "Unlit/S_UIButton"
             };
 
             sampler2D _MainTex;
-            fixed4 _Color;
-            fixed4 _TextureSampleAdd;
-            float4 _ClipRect;
-            float4 _MainTex_ST;
-            float _Button;
+            fixed4    _Color;
+            fixed4    _TextureSampleAdd;
+            float4    _ClipRect;
+            float4    _MainTex_ST;
+            float     _Button;
+            float     _Selected;
+            int       _UseBorder;
+            float     _UVScale;
 
             v2f vert(appdata_t v)
             {
@@ -95,32 +102,7 @@ Shader "Unlit/S_UIButton"
                 return OUT;
             }
 
-            float btn_play(fixed2 uv)
-            {
-                uv = (uv-.5)*2.;
-                uv.y *= 2.;
-                uv *= 3.;
-                uv.y += .3;
-                uv.x += .3;
-
-                // uv.x += 0.075;
-                // uv.x *= 2.;
-                // uv.y *= 4.;
-                float a = radians(35.);
-                float a2 = radians(-35.);
-                float tp = smoothstep(0.0, 0.15, 1.-dot(uv, fixed2(cos(a), sin(a)))); 
-                float bt = smoothstep(0.0, 0.15, 1.-dot(uv, fixed2(cos(a2), sin(a2))));
-
-                return tp * bt * step(-.4, uv.x); // (bt, tp);
-            }
-
-            float btn_step(fixed2 uv)
-            {
-                float btn = btn_play(uv);
-                return max(0., btn - btn_play(uv+fixed2(0.1, 0.)));
-            }
-
-            fixed4 frag(v2f IN) : SV_Target
+            fixed4 frame(v2f IN)
             {
                 half4 color = (tex2D(_MainTex, IN.texcoord) + _TextureSampleAdd) * IN.color;
 
@@ -136,19 +118,56 @@ Shader "Unlit/S_UIButton"
                 fixed2 uv = IN.texcoord;
                 float thck = fwidth(IN.texcoord);
                 fixed2 stp = step(1.-thck, uv) + step(uv, thck);
-                float bord = max(stp.x, stp.y);
-                color += fixed4(1.,1.,1.,0.) * bord;
 
-                if (_Button >= 0. && _Button <= .5)
-                    color += fixed4(1.,1.,1.,0.) * btn_play(IN.texcoord);
-                else if (_Button >= .5 && _Button <= 1.5)
-                    color += fixed4(1.,1.,1.,0.) * btn_step(IN.texcoord);
+                fixed4 bord_clr = lerp(
+                    fixed4(1., 1., 1., 0.), 
+                    fixed4(1., 0., 0., 0.), 
+                    saturate(_Selected)
+                );
 
-                color.r += 1. - step(0.01, abs(frac(uv.x*3.-.5)));
-                color.g += 1. - step(0.01, abs(frac(uv.y*3.-.5)));
-                
+                float bord = max(stp.x, stp.y) * _UseBorder;
+                color += bord_clr * bord;
+
+                fixed4 btn_color = fixed4(1., 1., 1., 0.);
+                fixed2 uvo = (IN.texcoord - .5)*_UVScale;
+                uvo *= 1.85;
+                if (_Button < 1.)
+                    color += btn_color * btn_play(uvo);
+                else if (_Button < 2.0)
+                    color += btn_color * btn_step(uvo);
+                else if (_Button < 3.)
+                    color += btn_color * btn_pause(uvo);
+                else if (_Button < 4.)
+                    color += btn_color * icon_exit(uvo);
+                else if (_Button < 5.)
+                    color += btn_color * icon_replay(uvo);
+                else if (_Button < 6.)
+                    color += btn_color * icon_win(uvo);
+
+                // color.r += 1. - step(0.01, abs(frac(uv.x*3.-.5)));
+                // color.g += 1. - step(0.01, abs(frac(uv.y*3.-.5)));
 
                 return color;
+            }
+
+            fixed4 frag(v2f IN) : SV_Target
+            {
+                // simple antialiasing of the frame
+                fixed2 uv = IN.texcoord;
+                float ddx = fwidth(uv.x)*0.5;
+                float ddy = fwidth(uv.y)*0.5;
+                fixed3 dd = fixed3(ddx, ddy, 0.);
+
+                fixed4 a = frame(IN);
+                IN.texcoord = uv + dd.xz;
+                fixed4 b = frame(IN);
+                IN.texcoord = uv - dd.xz;
+                fixed4 c = frame(IN);
+                IN.texcoord = uv + dd.zy;
+                fixed4 d = frame(IN);
+                IN.texcoord = uv - dd.zy;
+                fixed4 e = frame(IN);
+                return (b+c+d+e)/4.;
             }
         ENDCG
         }

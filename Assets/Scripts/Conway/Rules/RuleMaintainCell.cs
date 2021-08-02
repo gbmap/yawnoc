@@ -12,10 +12,9 @@ namespace Conway.Rules
 
 		public override ECellType Apply(Board b, int cx, int cy)
 		{
-			Vector2Int p = new Vector2Int(cx, cy);
-			if (b.PreviousState.Get(p) == Value)
+			if (b.PreviousState.Get(cx, cy) == Value)
 				return Value;
-			return b.CurrentState.Get(p);
+			return b.CurrentState.Get(cx, cy);
 		}
 	}
 }

@@ -10,8 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 675ee4715f5de7f0d80bc4a4768d4914, type: 3}
-  m_Name: 04
+  m_Name: 15
   m_EditorClassIdentifier: 
   Mode: 0
-  Resources: []
-  Texture: {fileID: 2800000, guid: d8f401a763bb829c5ba3f2ba070857e4, type: 3}
+  Resources:
+  - Type: 1
+    Count: 4
+  Texture: {fileID: 2800000, guid: 6553b7bb381270f4dbe1e6ca825ce174, type: 3}

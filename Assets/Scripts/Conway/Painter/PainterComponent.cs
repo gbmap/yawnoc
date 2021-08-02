@@ -1,12 +1,9 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Frictionless;
 
 namespace Conway
 {
-	[System.Serializable]
+    [System.Serializable]
 	public class PainterConfiguration
 	{
 		public Gradient Gradient;
@@ -33,7 +30,15 @@ namespace Conway
 			_size   = b.Size;
 			_values = new float[_size.x, _size.y];
 			Texture = new Texture2D(_size.x, _size.y);
+			for (int x = 0; x < _size.x; x++)
+			{
+				for (int y = 0; y < _size.y; y++)
+				{
+					Texture.SetPixel(x, y, new Color(0f, 0f, 0f, 1f));
+				}
+			}
 			Texture.filterMode = FilterMode.Point;
+			Texture.Apply();
 		}
 
 		public void Step(Conway.Board b)

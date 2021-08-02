@@ -1,10 +1,8 @@
-using System.Collections.Generic;
 using UnityEngine;
 using Frictionless;
 using ECellType = Conway.ECellType;
 using Conway;
 using Messages.Input;
-using System;
 
 public class CellData
 {
@@ -53,13 +51,16 @@ public class BoardComponentMailbox
 
 		MessageRouter.RaiseMessage(new Messages.Command.SelectCell {
 			Position = pos,
-			Type = _b.Board.GetCellCurrent(pos)
+			Type = _b.Board.GetCellCurrent(pos.x, pos.y)
 		});
     }
 
     private void Cb_OnPlayButtonClick(Messages.UI.OnPlayButtonClick msg)
 	{
 		_b.ToggleTimer();
+		MessageRouter.RaiseMessage(new Messages.Command.Play {
+			IsPlaying = _b.isPlaying
+		});
 	}
 
 	private void Cb_OnStepButtonClick(Messages.UI.OnStepButtonClick msg)
@@ -69,7 +70,6 @@ public class BoardComponentMailbox
 
 	private void Cb_PutCell(Messages.Command.PutCell msg)
 	{
-		Debug.Log(msg.Position);
 		if (!_b.Board.SetCell(msg.Position, msg.Type))
 			return;
 
@@ -96,9 +96,6 @@ public class BoardComponent : MonoBehaviour
 	public GameObject CellPrefab;
 	public GameObject BrainPrefab;
 	public float Margin = 0f;
-
-	//[Header("Configuration")]
-	//public Conway.Rules.Ruleset Ruleset;
 
 	[Header("Time")]
 	public bool isPlaying;
@@ -128,7 +125,11 @@ public class BoardComponent : MonoBehaviour
 			UpdateBoard();
 
 		if (Input.GetKeyDown(KeyCode.Space))
-			ToggleTimer();
+		{
+			MessageRouter.RaiseMessage(new Messages.Command.Play {
+				IsPlaying = !isPlaying
+			});
+		}
 
 		if (!isPlaying)
 			return;
@@ -169,42 +170,6 @@ public class BoardComponent : MonoBehaviour
 
 		_cellSize = CellPrefab.GetComponent<SpriteRenderer>().sprite.bounds.size;
 
-		if (CellPrefab != null)
-		{
-			InstantiateCells(board.Size);
-			board.ForEachCell(delegate (Conway.Board.ForEachCellParams p)
-			{
-				int x = p.Position.x;
-				int y = p.Position.y;
-
-				Vector3 position = new Vector3(x, y);
-				var instance     = Instantiate(CellPrefab);
-				var sprite       = instance.GetComponent<SpriteRenderer>().sprite;
-				var sprSize      = sprite.bounds.size;
-
-				var startPos     = new Vector3(
-					-sprSize.x*Mathf.Floor(board.Size.x/2),
-					-sprSize.y*Mathf.Floor(board.Size.y/2)
-				);
-
-				//var pos = new Vector3(sprSize.x*x, sprSize.y*y, 0f);
-				instance.transform.SetParent(transform);
-				instance.transform.localPosition = GetPosition(p.Position);
-
-				CellData cellData     = new CellData();
-				cellData.Position     = p.Position;
-				cellData.State        = p.State;
-
-				CellComponent cellComponent = instance.GetComponent<CellComponent>(); 
-				cellComponent.Style = board.Style; 
-				cellComponent.Data  = cellData; 
-				//cellComponent.OnClicked += OnCellClicked;
-				Cells[x, y] = cellComponent;
-			});
-		}
-
-		board.OnCellChanged += Cb_OnCellChanged;
-
 		MessageRouter.RaiseMessage(new Messages.Board.OnBoardGenerated
 		{
 			Component      = this,
@@ -221,11 +186,6 @@ public class BoardComponent : MonoBehaviour
 		}
 	}
 
-	private void InstantiateCells(Vector2Int size)
-	{
-		Cells = new CellComponent[size.x, size.y];
-	}
-
 	private void DestroyCells()
 	{
 		if (Cells == null) return;
@@ -236,9 +196,7 @@ public class BoardComponent : MonoBehaviour
 
 	public void Cb_OnCellChanged(Conway.Board.OnCellChangedParams param)
 	{
-		if (Cells == null) return;
-		var p = param.Position;
-		Cells[p.x, p.y].UpdateState(param.NewType);
+		return;
 	}
 
 	public void Cb_OnCollectiblesEnded()

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace Conway.Rules
 {
@@ -12,8 +13,15 @@ namespace Conway.Rules
 
 		public void Apply(Conway.Board b)
 		{
-			foreach (RuleBase r in Rules)
-				b.ApplyRule(r);
+			b.ForEachCell(delegate (Board.ForEachCellParams p)
+			{
+				foreach (RuleBase r in Rules)
+				{
+					{
+						b.ApplyRule(r, p.Position.x, p.Position.y);
+					}
+				}
+			});
 		}
 	}
 }

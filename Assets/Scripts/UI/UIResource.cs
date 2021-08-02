@@ -6,8 +6,11 @@ using Conway.Builder;
 namespace UI
 {
 	[RequireComponent(typeof(UnityEngine.UI.Toggle))]
+	[RequireComponent(typeof(UIButtonShader))]
 	public class UIResource : MonoBehaviour
 	{
+		UIButtonShader _btnShader;
+
 		public Conway.ECellType Type { get { return _resource.Type; } }
 
 		public UnityEngine.UI.Toggle Toggle	{ get; private set;	}
@@ -39,14 +42,21 @@ namespace UI
 			_text.text = count.ToString();
 		}
 
+		public void SetIsSelected(bool value)
+		{
+			_btnShader?.SetIsSelected(value);
+		}
+
 		void Awake()
 		{
 			Toggle = GetComponent<UnityEngine.UI.Toggle>();
 			_text  = GetComponentInChildren<UnityEngine.UI.Text>();
+			_btnShader = GetComponent<UIButtonShader>();
 		}
 
 		public void OnValueChanged(bool v)
 		{
+			SetIsSelected(v);
 			if (!v) 
 				return;
 

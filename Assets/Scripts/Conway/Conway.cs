@@ -1,6 +1,8 @@
 using UnityEngine;
+using System.Linq;
 
 using Conway.Rules;
+using UnityEngine.Profiling;
 
 namespace Conway
 {
@@ -25,18 +27,28 @@ namespace Conway
 
 		public void Set(Vector2Int p, ECellType v)
 		{
-			if (!IsPositionValid(p)) 
+			Set(p.x, p.y, v);
+		}
+
+		public void Set(int x, int y, ECellType v)
+		{
+			if (!IsPositionValid(x, y)) 
 				return;
 
-			var oldValue = Values[p.x, p.y];
-			Values[p.x, p.y] = v;
+			var oldValue = Values[x, y];
+			Values[x, y] = v;
 		}
 
 		public ECellType Get(Vector2Int p)
 		{
-			if (!IsPositionValid(p)) 
+			return Get(p.x, p.y);
+		}
+
+		public ECellType Get(int x, int y)
+		{
+			if (!IsPositionValid(x, y)) 
 				return ECellType.Dead;
-			return Values[p.x, p.y];
+			return Values[x, y];
 		}
 
 		public bool Compare(State other)
@@ -46,8 +58,39 @@ namespace Conway
 
 		public bool IsPositionValid(Vector2Int p)
 		{
-			return p.x >= 0 && p.x < Size.x && 
-				p.y >= 0 && p.y < Size.y;
+			return IsPositionValid(p.x, p.y);
+		}
+
+		public bool IsPositionValid(int x, int y)
+		{
+			return x >= 0 && x < Size.x && 
+				y >= 0 && y < Size.y;
+		}
+
+		public void Copy(State other)
+		{
+			Values = (ECellType[,])other.Values.Clone();
+		}
+	}
+
+	/*
+		Where the simulation should run based 
+		on live cells.
+	*/
+	public class SimulationBounds
+	{
+		public RectInt Bounds { get; set; }
+
+		public static SimulationBounds GenerateBounds(Board b)
+		{
+			//b.CurrentState
+			return new SimulationBounds{};
+		}
+
+		public static SimulationBounds GenerateFullBounds(Board b)
+		{
+			return new SimulationBounds {};
+
 		}
 	}
 
@@ -104,28 +147,31 @@ namespace Conway
 			}
 		}
 
-		public void SetCellCurrent(Vector2Int p, ECellType v)
+		public void SetCellCurrent(int x, int y, ECellType v)
 		{
-			if (!CurrentState.IsPositionValid(p))
+			if (!CurrentState.IsPositionValid(x, y))
 				return;
 
-			var oldValue = CurrentState.Get(p);
-			CurrentState.Set(p, v);
+			var oldValue = CurrentState.Get(x, y);
+			if (oldValue == v)
+				return; 
+
+			CurrentState.Set(x, y, v);
 			OnCellChanged?.Invoke(new OnCellChangedParams {
-				Position = p,
+				Position = new Vector2Int(x, y),
 				OldType = oldValue,
 				NewType = v
 			});
 		}
 
-		public void SetCellPrevious(Vector2Int p, ECellType v)
+		public void SetCellPrevious(int x, int y, ECellType v)
 		{
-			PreviousState.Set(p, v);
+			PreviousState.Set(x, y, v);
 		}
 
-		public ECellType GetCellCurrent(Vector2Int p)
+		public ECellType GetCellCurrent(int x, int y)
 		{
-			return CurrentState.Get(p);
+			return CurrentState.Get(x, y);
 		}
 
 		public ECellType GetCellPrevious(Vector2Int p)
@@ -138,37 +184,30 @@ namespace Conway
 			if (!CurrentState.IsPositionValid(p)) 
 				return false;
 
-			SetCellCurrent(p, v);
-			SetCellPrevious(p, v);
+			SetCellCurrent(p.x, p.y, v);
+			SetCellPrevious(p.x, p.y, v);
 			return true;
 		}
 
-		public void ApplyRule(Rules.RuleBase rule)
+		public void ApplyRule(Rules.RuleBase rule, int x, int y)
 		{
-			ForEachCell(delegate(ForEachCellParams p)
-			{
-				int x = p.Position.x;
-				int y = p.Position.y;
+			ECellType v = rule.Apply(this, x, y);
+			if (v == CurrentState.Get(x, y))
+				return; 
 
-				ECellType v = rule.Apply(this, x, y);
-				if (v == CurrentState.Get(p.Position))
-					return; 
-
-				SetCellCurrent(p.Position, v);
-			});
+			SetCellCurrent(x, y, v);
 		}
 
 		public void StepState()
 		{
-			ForEachCell(delegate(ForEachCellParams p)
+			PreviousState.Copy(CurrentState);
+
+			Profiler.BeginSample("Ruleset");
 			{
-				int x = p.Position.x;
-				int y = p.Position.y;
+				Ruleset?.Apply(this);
+			}
+			Profiler.EndSample();
 
-				PreviousState.Set(p.Position, CurrentState.Get(p.Position));
-			});
-
-			Ruleset?.Apply(this);
 			OnStep?.Invoke(this);
 		}
 	}

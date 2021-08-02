@@ -10,7 +10,9 @@ namespace Conway.Config
     {
 		private static bool CompareColor(Color a, Color b)
 		{
-			return Mathf.Approximately(Vector4.Distance(a, b), 0.0f);
+            Vector3 ca = new Vector3(a.r, a.g, a.b);
+            Vector3 cb = new Vector3(b.r, b.g, b.b);
+			return Vector3.Distance(ca, cb) < 0.05f;
 		}
 
         public static BoardStyle Default

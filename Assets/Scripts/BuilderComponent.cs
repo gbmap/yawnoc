@@ -121,21 +121,27 @@ public class BuilderComponent : MonoBehaviour
 
 	void OnEnable()
 	{
-		MessageRouter.AddHandler<Messages.Command.SelectResource>(builderBehaviour.Cb_OnResourceSelected);
-		MessageRouter.AddHandler<Messages.Input.OnClick>(builderBehaviour.Cb_OnClick);
-		MessageRouter.AddHandler<Messages.Gameplay.OnCellPlaced>(Cb_OnCellPlaced);
-		MessageRouter.AddHandler<Messages.Command.SelectCell>(builderBehaviour.Cb_OnCellSelected);
+		if (builderBehaviour != null)
+		{
+			MessageRouter.AddHandler<Messages.Command.SelectResource>(builderBehaviour.Cb_OnResourceSelected);
+			MessageRouter.AddHandler<Messages.Input.OnClick>(builderBehaviour.Cb_OnClick);
+			MessageRouter.AddHandler<Messages.Command.SelectCell>(builderBehaviour.Cb_OnCellSelected);
+		}
 
+		MessageRouter.AddHandler<Messages.Gameplay.OnCellPlaced>(Cb_OnCellPlaced);
 		MessageRouter.AddHandler<Messages.Gameplay.OnCollectibleObtained>(Cb_OnCollectibleObtained);
 	}
 
 	void OnDisable()
 	{
-		MessageRouter.RemoveHandler<Messages.Command.SelectResource>(builderBehaviour.Cb_OnResourceSelected);
-		MessageRouter.RemoveHandler<Messages.Input.OnClick>(builderBehaviour.Cb_OnClick);
-		MessageRouter.RemoveHandler<Messages.Gameplay.OnCellPlaced>(Cb_OnCellPlaced);
-		MessageRouter.RemoveHandler<Messages.Command.SelectCell>(builderBehaviour.Cb_OnCellSelected);
+		if (builderBehaviour != null)
+		{
+			MessageRouter.RemoveHandler<Messages.Command.SelectResource>(builderBehaviour.Cb_OnResourceSelected);
+			MessageRouter.RemoveHandler<Messages.Input.OnClick>(builderBehaviour.Cb_OnClick);
+			MessageRouter.RemoveHandler<Messages.Command.SelectCell>(builderBehaviour.Cb_OnCellSelected);
+		}
 
+		MessageRouter.RemoveHandler<Messages.Gameplay.OnCellPlaced>(Cb_OnCellPlaced);
 		MessageRouter.RemoveHandler<Messages.Gameplay.OnCollectibleObtained>(Cb_OnCollectibleObtained);
 		//MessageRouter.RemoveHandler<Messages.UI.OnResourceSelected>(Cb_OnResourceSelected);
 	}

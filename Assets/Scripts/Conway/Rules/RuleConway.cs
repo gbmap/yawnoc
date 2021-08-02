@@ -13,8 +13,8 @@ namespace Conway.Rules
 
 		public override ECellType Apply(Board b, int cx, int cy)
 		{
-			Vector2Int cp = new Vector2Int(cx, cy);
-			Vector2Int np = new Vector2Int(0, 0);
+			// Vector2Int cp = new Vector2Int(cx, cy);
+			// Vector2Int np = new Vector2Int(0, 0);
 			int liveNeighbors = 0;
 			for (int ny = -1; ny <= 1; ny++)
 			{
@@ -23,20 +23,23 @@ namespace Conway.Rules
 					if (nx == 0 && ny == 0) 
 						continue;
 
-					np.x = nx;
-					np.y = ny;
+					// np.x = nx;
+					// np.y = ny;
+					int x = cx + nx;
+					int y = cy +ny;
 
-					Vector2Int pp = cp + np;
+					// Vector2Int pp = cp + np;
 
-					if (pp.x < 0 || pp.x >= b.Size.x ||
-						pp.y < 0 || pp.y >= b.Size.y)
+					if (x < 0 || x >= b.Size.x ||
+						y < 0 || y >= b.Size.y)
 						continue;
 
-					liveNeighbors += Convert.ToInt32(b.PreviousState.Get(pp) == Alive);
+					int n = Convert.ToInt32(b.PreviousState.Get(x, y) == Alive);
+					liveNeighbors += n;
 				}
 			}
 
-			if (b.PreviousState.Get(cp) == Alive) // alive
+			if (b.PreviousState.Get(cx, cy) == Alive) // alive
 			{
 				bool alive = (liveNeighbors >= 2 && liveNeighbors <= 3);
 				return  alive ? Alive : Dead;
@@ -44,7 +47,7 @@ namespace Conway.Rules
 			else
 			{
 				bool alive = liveNeighbors == 3;
-				return alive ? Alive : b.GetCellPrevious(cp);
+				return alive ? Alive : b.PreviousState.Get(cx, cy);
 			}
 		}
 	}

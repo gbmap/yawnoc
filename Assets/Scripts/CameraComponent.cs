@@ -86,7 +86,7 @@ public class CameraComponent : MonoBehaviour
 		ZoomVelocity 	 *= 1f - ZoomDamping;
 		ZoomAcceleration *= 1f - ZoomDamping;
 		_camera.orthographicSize += ZoomVelocity * Time.deltaTime;
-		Debug.Log(_camera.orthographicSize);
+		// Debug.Log(_camera.orthographicSize);
 
 		if (Input.touchCount == 0)
 			return;

@@ -16,6 +16,8 @@ public class BoardShader : MonoBehaviour
     Renderer renderer;
     Material material;
 
+    public PainterComponent painter;
+
     void Awake()
     {
         renderer = GetComponent<Renderer>();
@@ -100,6 +102,7 @@ public class BoardShader : MonoBehaviour
     {
         texture.Apply();
         material.SetTexture("_Board", texture);
+        material.SetTexture("_PainterTexture", painter.Painter.Texture);
     }
 
     private void Cb_OnClick(OnClick obj)

@@ -1,26 +1,59 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Frictionless;
+using Messages.Command;
+using Messages.Gameplay;
 
-namespace UI 
+namespace UI
 {
-	public class UI : MonoBehaviour
+    public enum EIcon
 	{
+		Play,
+		Step,
+		Pause,
+		Exit,
+		Replay,
+		Win
+	}
+
+    public class UI : MonoBehaviour
+	{
+		public UIButtonShader PlayButtonShader;
+		public GameObject WinScreen;
+
 		void OnEnable()
 		{
 			MessageRouter.AddHandler<Messages.Gameplay.OnGameWon>(Cb_OnGameWon);
+			MessageRouter.AddHandler<Messages.Gameplay.OnGameLost>(Cb_OnGameLost);
+			MessageRouter.AddHandler<Messages.Command.Play>(Cb_OnPlay);
 		}
 
 		void OnDisable()
 		{
 			MessageRouter.RemoveHandler<Messages.Gameplay.OnGameWon>(Cb_OnGameWon);
+			MessageRouter.AddHandler<Messages.Gameplay.OnGameLost>(Cb_OnGameLost);
+			MessageRouter.RemoveHandler<Messages.Command.Play>(Cb_OnPlay);
 		}
 
-		public void Cb_OnGameWon(Messages.Gameplay.OnGameWon msg)
+        private void Cb_OnPlay(Play obj)
+        {
+			if (!PlayButtonShader)
+				return;
+
+			PlayButtonShader.ButtonType = obj.IsPlaying ? 2 : 0;
+        }
+
+        public void Cb_OnGameWon(Messages.Gameplay.OnGameWon msg)
 		{
-			Debug.Log("WON");
+			if (!WinScreen)
+				return;
+
+			WinScreen.SetActive(true);
 		}
+
+        private void Cb_OnGameLost(OnGameLost obj)
+        {
+
+        }
 
 		public void BtnClick_Play()
 		{
@@ -35,8 +68,6 @@ namespace UI
 		void DrawGizmos()
 		{
 			RectTransform t = GetComponent<RectTransform>();
-			//Gizmos.DrawWireCube(
-			//t.rect
 		}
 	}
 }
