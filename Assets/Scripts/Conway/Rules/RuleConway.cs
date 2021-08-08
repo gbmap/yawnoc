@@ -25,8 +25,8 @@ namespace Conway.Rules
 
 					// np.x = nx;
 					// np.y = ny;
-					int x = cx + nx;
-					int y = cy +ny;
+					int x = (cx + nx) % b.Size.x;
+					int y = (cy +ny) % b.Size.y;
 
 					// Vector2Int pp = cp + np;
 

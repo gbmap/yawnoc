@@ -25,6 +25,7 @@ public class BoardComponentMailbox
 
 		MessageRouter.AddHandler<Messages.Command.PutCell>(Cb_PutCell); 
 		MessageRouter.AddHandler<Messages.Command.PutCellWorld>(Cb_PutCellWorld);
+		MessageRouter.AddHandler<Messages.Command.Play>(Cb_Play);
 
 		MessageRouter.AddHandler<Messages.Input.OnClick>(Cb_OnClick);
 	}
@@ -36,8 +37,14 @@ public class BoardComponentMailbox
 
 		MessageRouter.RemoveHandler<Messages.Command.PutCell>(Cb_PutCell);
 		MessageRouter.RemoveHandler<Messages.Command.PutCellWorld>(Cb_PutCellWorld);
+		MessageRouter.RemoveHandler<Messages.Command.Play>(Cb_Play);
 
 		MessageRouter.RemoveHandler<Messages.Input.OnClick>(Cb_OnClick);
+	}
+
+	private void Cb_Play(Messages.Command.Play msg)
+	{
+		_b.SetTimerPlaying(msg.IsPlaying);
 	}
 
     private void Cb_OnClick(OnClick obj)
@@ -57,9 +64,8 @@ public class BoardComponentMailbox
 
     private void Cb_OnPlayButtonClick(Messages.UI.OnPlayButtonClick msg)
 	{
-		_b.ToggleTimer();
 		MessageRouter.RaiseMessage(new Messages.Command.Play {
-			IsPlaying = _b.isPlaying
+			IsPlaying = !_b.isPlaying
 		});
 	}
 
@@ -70,10 +76,14 @@ public class BoardComponentMailbox
 
 	private void Cb_PutCell(Messages.Command.PutCell msg)
 	{
+		var value = _b.Board.CurrentState.Get(msg.Position);
+		if (value != ECellType.Dead)
+			return;
+
 		if (!_b.Board.SetCell(msg.Position, msg.Type))
 			return;
 
-		MessageRouter.RaiseMessage(new Messages.Gameplay.OnCellPlaced {
+		MessageRouter.RaiseMessage(new Messages.Board.OnCellPlaced {
 			Cell = msg.Type
 		});
 	}
@@ -92,11 +102,6 @@ public class BoardComponentMailbox
 
 public class BoardComponent : MonoBehaviour
 {
-	[Header("Definition")]
-	public GameObject CellPrefab;
-	public GameObject BrainPrefab;
-	public float Margin = 0f;
-
 	[Header("Time")]
 	public bool isPlaying;
 	public float stepWait = 0.5f;
@@ -168,7 +173,8 @@ public class BoardComponent : MonoBehaviour
 
 		Board = board;
 
-		_cellSize = CellPrefab.GetComponent<SpriteRenderer>().sprite.bounds.size;
+		//_cellSize = CellPrefab.GetComponent<SpriteRenderer>().sprite.bounds.size;
+		_cellSize = new Vector2(1f, 1f);
 
 		MessageRouter.RaiseMessage(new Messages.Board.OnBoardGenerated
 		{
@@ -194,19 +200,13 @@ public class BoardComponent : MonoBehaviour
 		Cells = null;
 	}
 
-	public void Cb_OnCellChanged(Conway.Board.OnCellChangedParams param)
-	{
-		return;
-	}
-
-	public void Cb_OnCollectiblesEnded()
-	{
-		MessageRouter.RaiseMessage(new Messages.Gameplay.OnGameWon());
-	}
-
 	public void UpdateBoard()
 	{
 		Board.StepState();
+
+		MessageRouter.RaiseMessage(new Messages.Board.OnStep {
+			Board = Board
+		});
 	}
 
 	public Vector2Int WorldToBoard(Vector3 position)

@@ -28,9 +28,10 @@ namespace Conway
 		public Vector2Int Size = new Vector2Int(16, 16);
 
 		[Header("Loading")]
-		public Data.Level 		 Level;
-		public Rules.Ruleset     Ruleset;
-		public Config.BoardStyle Style;
+		public Data.Level 		 	Level;
+		public Data.LevelCollection LevelCollection;
+		public Rules.Ruleset     	Ruleset;
+		public Config.BoardStyle 	Style;
 
 		private BoardComponent   _boardComponent;
 		private BuilderComponent _builderComponent;

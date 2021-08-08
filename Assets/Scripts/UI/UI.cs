@@ -2,6 +2,7 @@ using UnityEngine;
 using Frictionless;
 using Messages.Command;
 using Messages.Gameplay;
+using System.Collections;
 
 namespace UI
 {
@@ -18,7 +19,7 @@ namespace UI
     public class UI : MonoBehaviour
 	{
 		public UIButtonShader PlayButtonShader;
-		public GameObject WinScreen;
+		public UIPopup Popup;
 
 		void OnEnable()
 		{
@@ -30,7 +31,7 @@ namespace UI
 		void OnDisable()
 		{
 			MessageRouter.RemoveHandler<Messages.Gameplay.OnGameWon>(Cb_OnGameWon);
-			MessageRouter.AddHandler<Messages.Gameplay.OnGameLost>(Cb_OnGameLost);
+			MessageRouter.RemoveHandler<Messages.Gameplay.OnGameLost>(Cb_OnGameLost);
 			MessageRouter.RemoveHandler<Messages.Command.Play>(Cb_OnPlay);
 		}
 
@@ -44,16 +45,58 @@ namespace UI
 
         public void Cb_OnGameWon(Messages.Gameplay.OnGameWon msg)
 		{
-			if (!WinScreen)
+			if (!Popup)
 				return;
+			
+			StartCoroutine(Coroutine_Victory());
+		}
 
-			WinScreen.SetActive(true);
+		IEnumerator Coroutine_Victory()
+		{
+			yield return new WaitForSeconds(0.75f);
+			Popup.Show(5, new UIPopup.Button[] {
+				new UIPopup.Button {
+					 Icon = 0,
+					 Callback = BtnClick_NextLevel 
+				},
+
+				new UIPopup.Button {
+					Icon = 4,
+					Callback = BtnClick_Replay
+				},
+
+				new UIPopup.Button {
+					Icon = 3,
+					Callback = BtnClick_Exit
+				}
+			});
+			Popup.gameObject.SetActive(true);
 		}
 
         private void Cb_OnGameLost(OnGameLost obj)
         {
+			if (!Popup)
+				return;
 
+			StartCoroutine(Coroutine_Defeat());
         }
+
+		IEnumerator Coroutine_Defeat()
+		{
+			yield return new WaitForSeconds(0.75f);
+			Popup.Show(5, new UIPopup.Button[] {
+				new UIPopup.Button {
+					Icon = 4,
+					Callback = BtnClick_Replay
+				},
+
+				new UIPopup.Button {
+					Icon = 3,
+					Callback = BtnClick_Exit
+				}
+			});
+			Popup.gameObject.SetActive(true);
+		}
 
 		public void BtnClick_Play()
 		{
@@ -65,9 +108,19 @@ namespace UI
 			MessageRouter.RaiseMessage(new Messages.UI.OnStepButtonClick(0));
 		}
 
-		void DrawGizmos()
+		private void BtnClick_NextLevel()
 		{
-			RectTransform t = GetComponent<RectTransform>();
+			Debug.Log("Next level");
+		}
+
+		private void BtnClick_Replay()
+		{
+			Debug.Log("Replay");
+		}
+
+		public void BtnClick_Exit()
+		{
+			Debug.Log("Exit");
 		}
 	}
 }

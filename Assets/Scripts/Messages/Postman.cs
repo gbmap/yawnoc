@@ -1,14 +1,12 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Frictionless;
 using Conway.Builder;
 
 namespace Messages
 {
-	namespace Command
-	{
-		public class SelectCell
+    namespace Command
+    {
+        public class SelectCell
 		{
 			public Vector2Int Position;
 			public Conway.ECellType Type;
@@ -58,8 +56,8 @@ namespace Messages
 	}
 	
 	namespace Input
-	{
-		public class OnClick
+    {
+        public class OnClick
 		{
 			public Vector3 ScreenPosition;
 			public Vector3 WorldPosition;
@@ -95,7 +93,9 @@ namespace Messages
 	}
 
 	namespace Builder
-	{
+    {
+        public class OnBuilderResourcesDepleted { }
+
 		public class OnBuilderResourcesCreated
 		{
 			public List<BuildResource> Resources;
@@ -108,18 +108,17 @@ namespace Messages
 	}
 
 	namespace Board
-	{
-		public class OnBoardGenerated
+    {
+        public class OnBoardGenerated
 		{
 			public BoardComponent Component;
 			public Conway.Board Board;
 		}
-	}
 
-	namespace Gameplay
-	{
-		public class OnGameWon {}
-		public class OnGameLost {}
+		public class OnStep
+		{
+			public Conway.Board Board;
+		}
 
 		public class OnCellPlaced
 		{
@@ -132,9 +131,16 @@ namespace Messages
 		}
 	}
 
+	namespace Gameplay
+    {
+        public class OnGameWon {}
+		public class OnGameLost {}
+
+	}
+
 	namespace UI
-	{
-		public class OnPlayButtonClick 	{}
+    {
+        public class OnPlayButtonClick 	{}
 		public class OnStepButtonClick 
 		{
 			public int Speed;
@@ -148,11 +154,16 @@ namespace Messages
 		{
 			public Conway.ECellType Type;
 		}
+
+		public class ShowLevelPopup
+		{
+			public Conway.Data.Level Level;
+		}
 	}
 
 	namespace Input
-	{
-		public class OnTouch 
+    {
+        public class OnTouch 
 		{
 			public Vector2 ScreenPosition;
 			public Vector2 DeltaPosition;
@@ -160,8 +171,8 @@ namespace Messages
 	}
 
 	namespace Painter
-	{
-		public class OnPainterCreated 
+    {
+        public class OnPainterCreated 
 		{
 			public Conway.PainterComponent Painter { get; private set; }
 			public OnPainterCreated(Conway.PainterComponent c)

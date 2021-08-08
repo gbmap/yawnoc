@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class UIButtonShader : MonoBehaviour
@@ -7,15 +5,20 @@ public class UIButtonShader : MonoBehaviour
     public int ButtonType;
     private int _LastButtonType = -1;
     
-    UnityEngine.UI.Image _image;
-    Material _material;
+    UnityEngine.UI.Image  _image;
+    UnityEngine.UI.Button _button;
+    Material              _material;
+    System.Action         _callback;
 
     // Start is called before the first frame update
-    void OnEnable()
+    void Awake()
     {
         _image = GetComponent<UnityEngine.UI.Image>();
         _image.material = new Material(_image.material);
         _material = _image.material;
+
+        _button = GetComponent<UnityEngine.UI.Button>();
+        _button?.onClick.AddListener(Cb_OnClick);
     }
 
     // Update is called once per frame
@@ -30,6 +33,16 @@ public class UIButtonShader : MonoBehaviour
 
     public void SetIsSelected(bool v)
     {
-        _material.SetInt("_Selected", v ? 1 : 0);
+        _material?.SetInt("_Selected", v ? 1 : 0);
+    }
+
+    public void SetButtonInfo(UIPopup.Button button)
+    {
+        _callback = button.Callback;
+    }
+    
+    private void Cb_OnClick()
+    {
+        _callback?.Invoke();
     }
 }

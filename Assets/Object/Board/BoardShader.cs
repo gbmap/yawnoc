@@ -6,6 +6,7 @@ using Conway;
 using System;
 using Messages.Input;
 using Messages.Command;
+using Messages.Painter;
 
 public class BoardShader : MonoBehaviour
 {
@@ -53,6 +54,7 @@ public class BoardShader : MonoBehaviour
         MessageRouter.AddHandler<Messages.Board.OnBoardGenerated>(Cb_OnBoardGenerated);
         MessageRouter.AddHandler<Messages.Input.OnClick>(Cb_OnClick);
         MessageRouter.AddHandler<Messages.Command.SelectCell>(Cb_OnCellSelected);
+        MessageRouter.AddHandler<Messages.Painter.OnPainterCreated>(Cb_OnPainterCreated);
     }
 
     void OnDisable()
@@ -60,6 +62,7 @@ public class BoardShader : MonoBehaviour
         MessageRouter.RemoveHandler<Messages.Board.OnBoardGenerated>(Cb_OnBoardGenerated);
         MessageRouter.RemoveHandler<Messages.Input.OnClick>(Cb_OnClick);
         MessageRouter.RemoveHandler<Messages.Command.SelectCell>(Cb_OnCellSelected);
+        MessageRouter.AddHandler<Messages.Painter.OnPainterCreated>(Cb_OnPainterCreated);
     }
 
     void Cb_OnBoardGenerated(Messages.Board.OnBoardGenerated msg)
@@ -92,6 +95,7 @@ public class BoardShader : MonoBehaviour
         material.SetVector("_BoardSize", new Vector2(board.Size.x, board.Size.y));
     }
 
+
     private void Cb_OnCellChanged(Board.OnCellChangedParams obj)
     {
         texture.SetPixel(obj.Position.x, obj.Position.y, board.Style.GetColor(obj.NewType));
@@ -117,4 +121,8 @@ public class BoardShader : MonoBehaviour
         material.SetVector("_SelectedCell", new Vector2(obj.Position.x, obj.Position.y));
     }
 
+    private void Cb_OnPainterCreated(OnPainterCreated obj)
+    {
+        material.SetTexture("_PainterTexture", painter.Painter.Texture);
+    }
 }

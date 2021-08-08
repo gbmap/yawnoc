@@ -228,3 +228,20 @@ float icon_win(fixed2 uv)
     c -= step(0.5, (1.-abs(uvb.y*3.5))-abs(uvb.x*uvb.x));
     return max(c, bt); 
 }
+
+float draw_icon(float icon, fixed2 uv)
+{
+    if (icon < 1.)
+        return btn_play(uv);
+    else if (icon < 2.0)
+        return btn_step(uv);
+    else if (icon < 3.)
+        return btn_pause(uv);
+    else if (icon < 4.)
+        return icon_exit(uv);
+    else if (icon < 5.)
+        return icon_replay(uv);
+    else if (icon < 6.)
+        return icon_win(uv);
+    return 0.;
+}

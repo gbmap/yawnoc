@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
 
 using UnityEngine;
 using Frictionless;
-using Messages.Gameplay;
+using Messages.Board;
 using Messages.Command;
 using Messages.Input;
 
@@ -128,8 +126,8 @@ public class BuilderComponent : MonoBehaviour
 			MessageRouter.AddHandler<Messages.Command.SelectCell>(builderBehaviour.Cb_OnCellSelected);
 		}
 
-		MessageRouter.AddHandler<Messages.Gameplay.OnCellPlaced>(Cb_OnCellPlaced);
-		MessageRouter.AddHandler<Messages.Gameplay.OnCollectibleObtained>(Cb_OnCollectibleObtained);
+		MessageRouter.AddHandler<Messages.Board.OnCellPlaced>(Cb_OnCellPlaced);
+		MessageRouter.AddHandler<Messages.Board.OnCollectibleObtained>(Cb_OnCollectibleObtained);
 	}
 
 	void OnDisable()
@@ -141,8 +139,8 @@ public class BuilderComponent : MonoBehaviour
 			MessageRouter.RemoveHandler<Messages.Command.SelectCell>(builderBehaviour.Cb_OnCellSelected);
 		}
 
-		MessageRouter.RemoveHandler<Messages.Gameplay.OnCellPlaced>(Cb_OnCellPlaced);
-		MessageRouter.RemoveHandler<Messages.Gameplay.OnCollectibleObtained>(Cb_OnCollectibleObtained);
+		MessageRouter.RemoveHandler<Messages.Board.OnCellPlaced>(Cb_OnCellPlaced);
+		MessageRouter.RemoveHandler<Messages.Board.OnCollectibleObtained>(Cb_OnCollectibleObtained);
 		//MessageRouter.RemoveHandler<Messages.UI.OnResourceSelected>(Cb_OnResourceSelected);
 	}
 
@@ -170,6 +168,23 @@ public class BuilderComponent : MonoBehaviour
 		MessageRouter.RaiseMessage(new Messages.Builder.OnBuilderResourceUpdated {
 			Resource = resource
 		});
+
+		bool zeroed = true;
+		foreach (var rsrc in Resources)
+		{
+			if (rsrc.Count > 0)
+			{
+				zeroed = false;
+				break;
+			}
+		}
+
+		if (!zeroed)
+			return;
+
+		MessageRouter.RaiseMessage(
+			new Messages.Builder.OnBuilderResourcesDepleted{}
+		);
     }
 
     private void Cb_OnCollectibleObtained(OnCollectibleObtained obj)

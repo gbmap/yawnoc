@@ -49,8 +49,6 @@ namespace Controls
 				UpdateTouch(touch);
 
 			lastClickState = true;
-
-		
 		}
 
 		bool CheckZoom()
@@ -78,7 +76,6 @@ namespace Controls
 
 		void StartTouch(Touch touch)
 		{
-			Debug.Log("Start");
 			startPosition     = touch.position;
 			clickStartTime    = Time.time;
 			hasFiredHoldEvent = false;
@@ -123,7 +120,6 @@ namespace Controls
 				ScreenPosition = position,
 				WorldPosition = Camera.main.ScreenToWorldPoint(position)
 			});
-			Debug.Log("Click");
 		}
 
 		void OnClickUpdate(Vector3 startPosition, Vector3 position)
@@ -135,7 +131,6 @@ namespace Controls
 				Position           = position,
 				WorldPosition      = Camera.main.ScreenToWorldPoint(position)
 			});
-			Debug.Log("Click Update");
 		}
 
 		void OnHold(Vector3 position, Vector3 delta)
@@ -146,7 +141,6 @@ namespace Controls
 				WorldPosition = Camera.main.ScreenToWorldPoint(position),
 				Delta = delta
 			});
-			Debug.Log("Hold");
 		}
 
 		void OnGUI()

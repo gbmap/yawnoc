@@ -1,8 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using System.Linq;
-using ECellType = Conway.ECellType;
 
 
 /*
@@ -11,7 +8,7 @@ using ECellType = Conway.ECellType;
 */
 namespace Conway.Builder
 {
-	[System.Serializable]
+    [System.Serializable]
 	public class BuildResource 
 	{
 		public ECellType Type;
@@ -46,6 +43,11 @@ namespace Conway.Builder
 			}
 
 			return resource;
+		}
+
+		public bool HasResources
+		{
+			get { return this.Any(x=>x.Count > 0); }
 		}
 	}
 

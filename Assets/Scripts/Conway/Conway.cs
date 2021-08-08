@@ -179,7 +179,7 @@ namespace Conway
 			return PreviousState.Get(p);
 		}
 
-		public bool SetCell(Vector2Int p, ECellType v)
+		public bool SetCell(Vector2Int p, ECellType v) 
 		{
 			if (!CurrentState.IsPositionValid(p)) 
 				return false;

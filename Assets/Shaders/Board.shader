@@ -169,9 +169,11 @@ Shader "Unlit/Board"
                 float t_brd      = length(board_clr.rgb);
                 t_brd            = step(0.1, t_brd);
                 col = lerp(col, board_clr, t_brd);
+                saturate(col);
 
                 float grid = dst_grid(uv_brd);
                 fixed4 clr = max(col, _GridColor*(1.-grid));
+                 clr = lerp(col, _GridColor,(1.-grid)*(1.-t_brd));
 
                 float2 clickPos = uv_board(_MousePos.xy);
                 clickPos = _ClickPos;

@@ -19,7 +19,7 @@ namespace Conway.Rules
 				b.CurrentState.Get(x, y) == Collector)
 			{
 				MessageRouter.RaiseMessage(
-					new Messages.Gameplay.OnCollectibleObtained {
+					new Messages.Board.OnCollectibleObtained {
 						Cell = Reward
 				});
 			}

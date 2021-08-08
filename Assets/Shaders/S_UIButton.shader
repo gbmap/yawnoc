@@ -131,6 +131,9 @@ Shader "Unlit/S_UIButton"
                 fixed4 btn_color = fixed4(1., 1., 1., 0.);
                 fixed2 uvo = (IN.texcoord - .5)*_UVScale;
                 uvo *= 1.85;
+
+                color += btn_color * draw_icon(_Button, uvo);
+                /*
                 if (_Button < 1.)
                     color += btn_color * btn_play(uvo);
                 else if (_Button < 2.0)
@@ -143,6 +146,7 @@ Shader "Unlit/S_UIButton"
                     color += btn_color * icon_replay(uvo);
                 else if (_Button < 6.)
                     color += btn_color * icon_win(uvo);
+                */
 
                 // color.r += 1. - step(0.01, abs(frac(uv.x*3.-.5)));
                 // color.g += 1. - step(0.01, abs(frac(uv.y*3.-.5)));
