@@ -8,7 +8,7 @@ namespace UI
         public GameObject    LevelInfo;
         public RectTransform Container;
 
-        public Conway.Data.LevelCollection Collection;
+        public Conway.LevelLoader LevelLoader;
 
         private List<GameObject> Levels;
 
@@ -19,7 +19,7 @@ namespace UI
 
         void Start()
         {
-            SetLevelCollection(Collection);
+            SetLevelCollection(LevelLoader.LevelCollection);
         }
 
         public void SetLevelCollection(Conway.Data.LevelCollection collection)

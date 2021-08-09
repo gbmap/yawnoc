@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections;
+using UnityEngine;
 
 namespace Frictionless
 {
@@ -57,6 +58,7 @@ namespace Frictionless
 	#else
 							h.Delegate.Method.Invoke(h.Target, new object[] { msg });
 	#endif
+							Debug.Log($"Message raised: {msg.GetType()}");
 						}
 					}
 					finally

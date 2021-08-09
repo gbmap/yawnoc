@@ -11,7 +11,7 @@ namespace UI
             _child = transform.GetChild(0);
         }
 
-        public void Show(float delay =0f)
+        public void Show(float delay = 0f)
         {
             StartCoroutine(ShowCoroutine(delay));
         }
@@ -19,12 +19,13 @@ namespace UI
         IEnumerator ShowCoroutine(float delay)
         {
             yield return new WaitForSeconds(delay);
-            _child.gameObject.SetActive(true);
+            var animator = GetComponent<Animator>();
+            animator.SetTrigger("Show");
         }
 
         public void Hide()
         {
-            var animator = _child.GetComponent<Animator>();
+            var animator = GetComponent<Animator>();
             animator.SetTrigger("Hide");
         }
     }

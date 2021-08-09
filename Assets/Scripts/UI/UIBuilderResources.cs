@@ -38,6 +38,9 @@ namespace UI
 
         void Cb_OnResourceUpdated(Messages.Builder.OnBuilderResourceUpdated obj)
         {
+			if (!_instances.ContainsKey(obj.Resource.Type))
+				return;
+
 			_instances[obj.Resource.Type].SetResource(obj.Resource);
         }
 

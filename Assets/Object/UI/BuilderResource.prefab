@@ -172,22 +172,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: BuilderResource
       objectReference: {fileID: 0}
-    - target: {fileID: 9109306273622196411, guid: 4e0cb71a2efa58aa2ac8f3e5b7ba7b96, type: 3}
-      propertyPath: m_Color.b
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 9109306273622196411, guid: 4e0cb71a2efa58aa2ac8f3e5b7ba7b96, type: 3}
-      propertyPath: m_Color.g
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 9109306273622196411, guid: 4e0cb71a2efa58aa2ac8f3e5b7ba7b96, type: 3}
-      propertyPath: m_Color.r
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 9109306273622196411, guid: 4e0cb71a2efa58aa2ac8f3e5b7ba7b96, type: 3}
-      propertyPath: m_Material
-      value: 
-      objectReference: {fileID: 2100000, guid: d9334a543cf49849aaa7b194dbe0ecf8, type: 2}
     m_RemovedComponents:
     - {fileID: 9109306273622196404, guid: 4e0cb71a2efa58aa2ac8f3e5b7ba7b96, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 4e0cb71a2efa58aa2ac8f3e5b7ba7b96, type: 3}

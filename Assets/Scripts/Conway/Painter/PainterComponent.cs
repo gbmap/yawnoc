@@ -69,24 +69,25 @@ namespace Conway
 		void OnEnable()
 		{
 			MessageRouter.AddHandler<Messages.Board.OnBoardGenerated>(Cb_OnBoardGenerated);
+			MessageRouter.AddHandler<Messages.Board.OnStep>(Cb_OnStep);
 		}
 
 		void OnDisable()
 		{
 			MessageRouter.RemoveHandler<Messages.Board.OnBoardGenerated>(Cb_OnBoardGenerated);
+			MessageRouter.RemoveHandler<Messages.Board.OnStep>(Cb_OnStep);
 		}
 
 		void Cb_OnBoardGenerated(Messages.Board.OnBoardGenerated msg)
 		{
 			Painter = new Painter(msg.Board, Config);
-			msg.Board.OnStep += Cb_OnStep;
 
 			MessageRouter.RaiseMessage(new Messages.Painter.OnPainterCreated(this));
 		}
 
-		void Cb_OnStep(Conway.Board b)
+		void Cb_OnStep(Messages.Board.OnStep msg)
 		{
-			Painter.Step(b);
+			Painter.Step(msg.Board);
 			MessageRouter.RaiseMessage(new Messages.Painter.OnPainterUpdated(this));
 		}
 	}

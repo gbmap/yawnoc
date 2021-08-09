@@ -106,8 +106,6 @@ public class BoardComponent : MonoBehaviour
 	public bool isPlaying;
 	public float stepWait = 0.5f;
 
-	private CellComponent[,] Cells;
-
 	private float _stepTimer;
 	private Vector2 _cellSize;
 	public Vector2 CellSize { get { return _cellSize; } }
@@ -168,8 +166,7 @@ public class BoardComponent : MonoBehaviour
 
 	public void GenerateBoard(Conway.Board board)
 	{
-		if (Board != null)
-			DestroyBoard();
+		DestroyBoard();
 
 		Board = board;
 
@@ -186,18 +183,7 @@ public class BoardComponent : MonoBehaviour
 	private void DestroyBoard()
 	{
 		if (Board != null)
-		{
-			DestroyCells();
 			Board = null;
-		}
-	}
-
-	private void DestroyCells()
-	{
-		if (Cells == null) return;
-		foreach (CellComponent cell in Cells)
-			GameObject.Destroy(cell.gameObject);
-		Cells = null;
 	}
 
 	public void UpdateBoard()

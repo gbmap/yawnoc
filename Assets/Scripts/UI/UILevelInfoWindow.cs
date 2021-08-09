@@ -32,5 +32,12 @@ namespace UI
             _levelInfo.Level = obj.Level;
             Show(0.1f);
         }
+
+        public void Cb_PlayClick()
+        {
+            MessageRouter.RaiseMessage(new Messages.Gameplay.LoadLevel {
+                Level = _levelInfo.Level
+            });
+        }
     }
 }

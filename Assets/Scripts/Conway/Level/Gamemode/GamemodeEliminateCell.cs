@@ -37,7 +37,9 @@ namespace Conway
                 CurrentCells[p.State] = cellCount + 1;
             });
 
-            component.Board.OnCellChanged += Cb_OnCellChanged;
+            MessageRouter.AddHandler<Messages.Board.OnCellChanged>(
+                Cb_OnCellChanged
+            );
 
             MessageRouter.AddHandler<Messages.Builder.OnBuilderResourcesDepleted>(
                 Cb_OnResourcesDepleted
@@ -55,9 +57,9 @@ namespace Conway
             return EState.Playing;
         }
 
-        private void Cb_OnCellChanged(Board.OnCellChangedParams obj)
+        private void Cb_OnCellChanged(Messages.Board.OnCellChanged msg)
         {
-            ECellType cell = obj.OldType;
+            ECellType cell = msg.OldType;
             if (!TargetCells.Contains(cell))
                 return;
 

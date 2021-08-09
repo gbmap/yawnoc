@@ -1,9 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Frictionless;
 using Conway;
-using System;
 using Messages.Input;
 using Messages.Command;
 using Messages.Painter;
@@ -52,6 +49,8 @@ public class BoardShader : MonoBehaviour
     void OnEnable()
     {
         MessageRouter.AddHandler<Messages.Board.OnBoardGenerated>(Cb_OnBoardGenerated);
+        MessageRouter.AddHandler<Messages.Board.OnCellChanged>(Cb_OnCellChanged);
+        MessageRouter.AddHandler<Messages.Board.OnStep>(Cb_OnStep);
         MessageRouter.AddHandler<Messages.Input.OnClick>(Cb_OnClick);
         MessageRouter.AddHandler<Messages.Command.SelectCell>(Cb_OnCellSelected);
         MessageRouter.AddHandler<Messages.Painter.OnPainterCreated>(Cb_OnPainterCreated);
@@ -60,9 +59,11 @@ public class BoardShader : MonoBehaviour
     void OnDisable()
     {
         MessageRouter.RemoveHandler<Messages.Board.OnBoardGenerated>(Cb_OnBoardGenerated);
+        MessageRouter.RemoveHandler<Messages.Board.OnCellChanged>(Cb_OnCellChanged);
+        MessageRouter.RemoveHandler<Messages.Board.OnStep>(Cb_OnStep);
         MessageRouter.RemoveHandler<Messages.Input.OnClick>(Cb_OnClick);
         MessageRouter.RemoveHandler<Messages.Command.SelectCell>(Cb_OnCellSelected);
-        MessageRouter.AddHandler<Messages.Painter.OnPainterCreated>(Cb_OnPainterCreated);
+        MessageRouter.RemoveHandler<Messages.Painter.OnPainterCreated>(Cb_OnPainterCreated);
     }
 
     void Cb_OnBoardGenerated(Messages.Board.OnBoardGenerated msg)
@@ -84,8 +85,6 @@ public class BoardShader : MonoBehaviour
         transform.position = msg.Component.transform.position - csz/2f;
         transform.localScale = new Vector3(csz.x*bsz.x, csz.y*bsz.y, 1.0f);
 
-        board.OnCellChanged += Cb_OnCellChanged;
-        board.OnStep += Cb_OnStep;
 
         float x = csz.x / board.Size.x;
         float y = csz.y / board.Size.y;
@@ -96,13 +95,13 @@ public class BoardShader : MonoBehaviour
     }
 
 
-    private void Cb_OnCellChanged(Board.OnCellChangedParams obj)
+    private void Cb_OnCellChanged(Messages.Board.OnCellChanged msg)
     {
-        texture.SetPixel(obj.Position.x, obj.Position.y, board.Style.GetColor(obj.NewType));
+        texture.SetPixel(msg.Position.x, msg.Position.y, board.Style.GetColor(msg.NewType));
         texture.Apply();
     }
 
-    private void Cb_OnStep(Board b)
+    private void Cb_OnStep(Messages.Board.OnStep msg)
     {
         texture.Apply();
         material.SetTexture("_Board", texture);

@@ -1,4 +1,6 @@
 using System;
+using Frictionless;
+using Messages.Gameplay;
 using UnityEngine;
 
 namespace Conway
@@ -99,5 +101,23 @@ namespace Conway
 
 			_builderComponent.SetResources(new Conway.Builder.BuildResources(level.Resources));
 		}
-	}
+
+		void OnEnable()
+		{
+			MessageRouter.AddHandler<Messages.Gameplay.LoadLevel>(Cb_LoadLevel);
+		}
+
+		void OnDisable()
+		{
+			MessageRouter.RemoveHandler<Messages.Gameplay.LoadLevel>(Cb_LoadLevel);
+		}
+
+        private void Cb_LoadLevel(LoadLevel obj)
+        {
+			Load(obj.Level, Ruleset, Style);
+			MessageRouter.RaiseMessage(new Messages.Gameplay.ChangeState {
+				State = Messages.Gameplay.State.Gameplay
+			});
+        }
+    }
 }

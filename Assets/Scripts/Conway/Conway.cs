@@ -3,6 +3,7 @@ using System.Linq;
 
 using Conway.Rules;
 using UnityEngine.Profiling;
+using Frictionless;
 
 namespace Conway
 {
@@ -108,8 +109,6 @@ namespace Conway
 			public ECellType  OldType;
 			public ECellType  NewType;
 		}
-		public System.Action<OnCellChangedParams> OnCellChanged;
-		public System.Action<Board> OnStep;
 
 		public Board(
 			Vector2Int size, 
@@ -157,7 +156,8 @@ namespace Conway
 				return; 
 
 			CurrentState.Set(x, y, v);
-			OnCellChanged?.Invoke(new OnCellChangedParams {
+
+			MessageRouter.RaiseMessage(new Messages.Board.OnCellChanged {
 				Position = new Vector2Int(x, y),
 				OldType = oldValue,
 				NewType = v
@@ -207,8 +207,6 @@ namespace Conway
 				Ruleset?.Apply(this);
 			}
 			Profiler.EndSample();
-
-			OnStep?.Invoke(this);
 		}
 	}
 

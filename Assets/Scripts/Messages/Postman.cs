@@ -129,6 +129,13 @@ namespace Messages
 		{
 			public Conway.ECellType Cell;
 		}
+
+		public class OnCellChanged
+		{
+			public Vector2Int Position;
+			public Conway.ECellType OldType;
+			public Conway.ECellType NewType;
+		}
 	}
 
 	namespace Gameplay
@@ -136,6 +143,21 @@ namespace Messages
         public class OnGameWon {}
 		public class OnGameLost {}
 
+		public enum State
+		{
+			Menu,
+			Gameplay
+		}
+
+		public class ChangeState
+		{
+			public State State;
+		}
+
+		public class LoadLevel
+		{
+			public Conway.Data.Level Level;
+		}
 	}
 
 	namespace UI
@@ -161,15 +183,6 @@ namespace Messages
 		}
 	}
 
-	namespace Input
-    {
-        public class OnTouch 
-		{
-			public Vector2 ScreenPosition;
-			public Vector2 DeltaPosition;
-		}
-	}
-
 	namespace Painter
     {
         public class OnPainterCreated 
@@ -188,14 +201,6 @@ namespace Messages
 			{
 				Painter = c;
 			}
-		}
-	}
-
-	public class Postman : MonoBehaviour
-	{
-		public static Postman Get()
-		{
-			return FindObjectOfType<Postman>();
 		}
 	}
 }
