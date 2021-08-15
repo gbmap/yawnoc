@@ -15,22 +15,26 @@ namespace UI
             _levelInfo = gameObject.GetComponent<UILevelInfo>();
         }
 
-        protected virtual void OnEnable()
+        protected override void OnEnable()
         {
+            base.OnEnable();
             MessageRouter.AddHandler<Messages.UI.ShowLevelPopup>(Cb_ShowLevelPopup);
         }
 
-        void OnDisable()
+        protected override void OnDisable()
         {
-            // MessageRouter.RemoveHandler<Messages.UI.ShowLevelPopup>(Cb_ShowLevelPopup);
+            base.OnDisable();
+            MessageRouter.RemoveHandler<Messages.UI.ShowLevelPopup>(Cb_ShowLevelPopup);
         }
 
-        private void Cb_ShowLevelPopup(ShowLevelPopup obj)
+        private void Cb_ShowLevelPopup(ShowLevelPopup msg)
         {
             Debug.Log("Show level info popup.");
 
-            _levelInfo.Level = obj.Level;
-            Show(0.1f);
+            _levelInfo.Level = msg.Level;
+            MessageRouter.RaiseMessage(new Messages.UI.OnUIChangeState {
+                State = EUIState.LevelInfo
+            });
         }
 
         public void Cb_PlayClick()
@@ -38,6 +42,8 @@ namespace UI
             MessageRouter.RaiseMessage(new Messages.Gameplay.LoadLevel {
                 Level = _levelInfo.Level
             });
+
+            Hide();
         }
     }
 }

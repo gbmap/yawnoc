@@ -229,6 +229,24 @@ float icon_win(fixed2 uv)
     return max(c, bt); 
 }
 
+float icon_menu(fixed2 uv)
+{
+    return _square(uv, fixed2(1.25, 0.2))
+         + _square(fixed2(uv.x, abs(uv.y) - .4), fixed2(1.25, 0.2));
+}
+
+float icon_close(fixed2 uv)
+{
+    float a = radians(45.);
+    float2x2 rot = float2x2(
+        cos(a), -sin(a),
+        sin(a), cos(a)
+    );
+    uv = mul(rot,uv.xy);
+    return max(_square(uv.yx, fixed2(1.25, 0.25)),
+               _square(uv.xy, fixed2(1.25, 0.25)));
+}
+
 float draw_icon(float icon, fixed2 uv)
 {
     if (icon < 1.)
@@ -243,5 +261,9 @@ float draw_icon(float icon, fixed2 uv)
         return icon_replay(uv);
     else if (icon < 6.)
         return icon_win(uv);
+    else if (icon < 7.)
+        return icon_menu(uv);
+    else if (icon < 8.)
+        return icon_close(uv);
     return 0.;
 }

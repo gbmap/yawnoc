@@ -7,7 +7,8 @@ namespace Conway
 {
     public enum ELevelMode
 	{
-		Collect
+		Collect,
+		None
 	}
 
 	public class BoardLoader 
@@ -61,6 +62,7 @@ namespace Conway
 			Rules.Ruleset ruleset,
 			Config.BoardStyle style
 		) {
+			LoadGamemode(level);
 			LoadBoard(level, ruleset, style);
 			LoadBuilder(level);
 		}
@@ -84,6 +86,8 @@ namespace Conway
 			board.Style  	   = style;
 
 			_boardComponent.GenerateBoard(board);
+
+			Level = level;
 		}
 
 		void LoadBuilder(Data.Level level)
@@ -102,14 +106,29 @@ namespace Conway
 			_builderComponent.SetResources(new Conway.Builder.BuildResources(level.Resources));
 		}
 
+		void LoadGamemode(Data.Level level)
+		{
+			if (level.Mode == ELevelMode.None)
+				return;
+
+			var gamemode = gameObject.GetComponent<GamemodeComponent>();
+			if (gamemode)
+				Destroy(gamemode);
+
+			gamemode = gameObject.AddComponent<GamemodeComponent>();
+			gamemode.Gamemode = Resources.Load<Gamemode>("Data/Gamemodes/GamemodeEliminateCell");
+		}
+
 		void OnEnable()
 		{
 			MessageRouter.AddHandler<Messages.Gameplay.LoadLevel>(Cb_LoadLevel);
+			MessageRouter.AddHandler<Messages.Gameplay.ResetLevel>(Cb_ResetLevel);
 		}
 
 		void OnDisable()
 		{
 			MessageRouter.RemoveHandler<Messages.Gameplay.LoadLevel>(Cb_LoadLevel);
+			MessageRouter.RemoveHandler<Messages.Gameplay.ResetLevel>(Cb_ResetLevel);
 		}
 
         private void Cb_LoadLevel(LoadLevel obj)
@@ -119,5 +138,11 @@ namespace Conway
 				State = Messages.Gameplay.State.Gameplay
 			});
         }
+
+        private void Cb_ResetLevel(ResetLevel obj)
+        {
+			Load(this.Level, Ruleset, Style);
+        }
+
     }
 }

@@ -19,6 +19,8 @@ Shader "Unlit/S_UIButton"
         _UVScale ("UV Scale", Float) = 2
         [PerRendererData] _Button ("Button", Int) = 0
         [PerRendererData] _Selected ("Selected", Int) = 0
+
+        [PerRendererData] _AnimDisappear ("Disappear Animation", Float) = 0.0
     }
     SubShader
     {
@@ -87,6 +89,7 @@ Shader "Unlit/S_UIButton"
             float     _Selected;
             int       _UseBorder;
             float     _UVScale;
+            float     _AnimDisappear;
 
             v2f vert(appdata_t v)
             {
@@ -154,6 +157,41 @@ Shader "Unlit/S_UIButton"
                 return color;
             }
 
+            float4x4 abberration(v2f IN, float angle, fixed off)
+            {
+                fixed2 uv = IN.texcoord;
+                fixed2 offset = fixed2(cos(angle), sin(angle)) * off;
+                IN.texcoord = uv - offset.xy;
+                fixed4 a = frame(IN);
+                IN.texcoord = uv + offset.xy;
+                fixed4 a2 = frame(IN);
+                float4x4 clr = float4x4(
+                    a.r, a.g, a.b, a.a, 
+                    a2.r, a2.g, a2.b, a2.a, 
+                    0., 0., 0., 0., 
+                    0., 0., 0., 0.
+                );
+                return clr;
+            }
+
+            fixed4 abberration_clr1(v2f IN, float angle, fixed off)
+            {
+                float4x4 abberration_ = abberration(IN, angle, off);
+                fixed4 a = abberration_[0];
+                fixed4 b = abberration_[1];
+                return fixed4(a.r, a.g*b.g, b.b, a.a);
+            }
+            
+            fixed4 abberration_clr2(v2f IN, float angle, fixed off)
+            {
+                return fixed4(abberration_clr1(IN, angle, off).grb, 1.);
+            }
+
+            fixed4 abberration_clr3(v2f IN, float angle, fixed off)
+            {
+                return fixed4(abberration_clr1(IN, angle, off).rbg, 1.);
+            }
+
             fixed4 frag(v2f IN) : SV_Target
             {
                 // simple antialiasing of the frame
@@ -162,16 +200,23 @@ Shader "Unlit/S_UIButton"
                 float ddy = fwidth(uv.y)*0.5;
                 fixed3 dd = fixed3(ddx, ddy, 0.);
 
-                fixed4 a = frame(IN);
+                // abberration factor
+                float t = saturate(_AnimDisappear-0.001);///*_Time.y;
+                float abb = frac(t);
+                abb = abb*abb*abb*abb*2.;
+
                 IN.texcoord = uv + dd.xz;
-                fixed4 b = frame(IN);
+                fixed4 b = abberration_clr1(IN, 0., 0.075*abb);
                 IN.texcoord = uv - dd.xz;
-                fixed4 c = frame(IN);
+                fixed4 c = abberration_clr2(IN, radians(90.+t), 0.1*abb);
                 IN.texcoord = uv + dd.zy;
-                fixed4 d = frame(IN);
+                fixed4 d = abberration_clr1(IN, radians(45.+t), 0.05*abb);
                 IN.texcoord = uv - dd.zy;
-                fixed4 e = frame(IN);
-                return (b+c+d+e)/4.;
+                fixed4 e = abberration_clr1(IN, radians(30.+t), 0.075*abb);
+
+                fixed4 final = (b+c+d+e)/4.;
+                final.a = 1. - abb;
+                return final;
             }
         ENDCG
         }

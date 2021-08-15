@@ -9,14 +9,12 @@ namespace UI
     {
         public UIWindow LevelLoader;
 
+        
         public void Cb_OnPlayClick()
         {
-            // Level loader
-            MessageRouter.RaiseMessage(new Messages.Command.Play {
-                IsPlaying = true
+            MessageRouter.RaiseMessage(new Messages.UI.OnUIChangeState {
+                State = EUIState.LevelBrowser
             });
-
-            LevelLoader?.Show(0.75f);
         }
         
         public void Cb_OnHelpClick()

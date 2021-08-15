@@ -80,7 +80,8 @@ public class CameraComponent : MonoBehaviour
 
 		transform.position += Velocity * Time.deltaTime;
 
-		//ZoomAcceleration -= Input.mouseScrollDelta.y;
+		ZoomAcceleration -= (Input.mouseScrollDelta.y)
+						   *(Input.mouseScrollDelta.y)*2f;
 
 		ZoomVelocity 	 += ZoomAcceleration;
 		ZoomVelocity 	 *= 1f - ZoomDamping;

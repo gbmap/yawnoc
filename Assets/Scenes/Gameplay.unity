@@ -722,7 +722,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isPlaying: 0
-  stepWait: 0.05
+  stepWait: 0.25
 --- !u!4 &457125394
 Transform:
   m_ObjectHideFlags: 0

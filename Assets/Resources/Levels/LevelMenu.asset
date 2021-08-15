@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 675ee4715f5de7f0d80bc4a4768d4914, type: 3}
   m_Name: LevelMenu
   m_EditorClassIdentifier: 
-  Mode: 0
+  Mode: 1
   Resources: []
   Texture: {fileID: 2800000, guid: c42781ef0c1dac0e7bc41e9eb7f1d300, type: 3}

@@ -16,6 +16,14 @@ namespace UI
 		Win
 	}
 
+	public enum EUIState
+	{
+		MainMenu,
+		LevelBrowser,
+		LevelInfo,
+		Gameplay
+	}
+
     public class UI : MonoBehaviour
 	{
 		public UIButtonShader PlayButtonShader;
@@ -70,7 +78,7 @@ namespace UI
 					Callback = BtnClick_Exit
 				}
 			});
-			Popup.gameObject.SetActive(true);
+			Popup.gameObject.GetComponent<Animator>().SetTrigger("Show");
 		}
 
         private void Cb_OnGameLost(OnGameLost obj)
@@ -95,7 +103,7 @@ namespace UI
 					Callback = BtnClick_Exit
 				}
 			});
-			Popup.gameObject.SetActive(true);
+			Popup.gameObject.GetComponent<Animator>().SetTrigger("Show");
 		}
 
 		public void BtnClick_Play()
@@ -108,14 +116,28 @@ namespace UI
 			MessageRouter.RaiseMessage(new Messages.UI.OnStepButtonClick(0));
 		}
 
+		public void BtnClick_Reset()
+		{
+			MessageRouter.RaiseMessage(new Messages.UI.OnResetButtonClick());
+			MessageRouter.RaiseMessage(new Messages.Gameplay.ResetLevel());
+		}
+
 		private void BtnClick_NextLevel()
 		{
 			Debug.Log("Next level");
+			var levelLoader = Conway.LevelLoader.Instance;
+			Conway.Data.Level nextLevel;
+			if (levelLoader.LevelCollection.NextLevel(levelLoader.Level, out nextLevel))
+			{
+				MessageRouter.RaiseMessage(new Messages.Gameplay.LoadLevel {
+					Level = nextLevel
+				});
+			}
 		}
 
 		private void BtnClick_Replay()
 		{
-			Debug.Log("Replay");
+			MessageRouter.RaiseMessage(new Messages.Gameplay.ResetLevel());
 		}
 
 		public void BtnClick_Exit()

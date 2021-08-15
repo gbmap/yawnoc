@@ -97,6 +97,9 @@ public class BoardShader : MonoBehaviour
 
     private void Cb_OnCellChanged(Messages.Board.OnCellChanged msg)
     {
+        if (texture == null) 
+            return;
+
         texture.SetPixel(msg.Position.x, msg.Position.y, board.Style.GetColor(msg.NewType));
         texture.Apply();
     }

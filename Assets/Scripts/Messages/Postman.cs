@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Conway.Builder;
+using UIGame = UI;
 
 namespace Messages
 {
@@ -158,6 +159,10 @@ namespace Messages
 		{
 			public Conway.Data.Level Level;
 		}
+
+		public class ResetLevel
+		{
+		}
 	}
 
 	namespace UI
@@ -172,6 +177,11 @@ namespace Messages
 			}
 		}
 
+		public class OnResetButtonClick
+		{
+
+		}
+
 		public class OnResourceSelected
 		{
 			public Conway.ECellType Type;
@@ -180,6 +190,11 @@ namespace Messages
 		public class ShowLevelPopup
 		{
 			public Conway.Data.Level Level;
+		}
+
+		public class OnUIChangeState
+		{
+			public UIGame.EUIState State;
 		}
 	}
 

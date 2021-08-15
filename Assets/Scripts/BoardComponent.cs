@@ -3,6 +3,8 @@ using Frictionless;
 using ECellType = Conway.ECellType;
 using Conway;
 using Messages.Input;
+using Messages.Board;
+using System;
 
 public class CellData
 {
@@ -26,6 +28,7 @@ public class BoardComponentMailbox
 		MessageRouter.AddHandler<Messages.Command.PutCell>(Cb_PutCell); 
 		MessageRouter.AddHandler<Messages.Command.PutCellWorld>(Cb_PutCellWorld);
 		MessageRouter.AddHandler<Messages.Command.Play>(Cb_Play);
+		MessageRouter.AddHandler<Messages.Board.OnBoardGenerated>(Cb_OnBoardGenerated);
 
 		MessageRouter.AddHandler<Messages.Input.OnClick>(Cb_OnClick);
 	}
@@ -38,11 +41,13 @@ public class BoardComponentMailbox
 		MessageRouter.RemoveHandler<Messages.Command.PutCell>(Cb_PutCell);
 		MessageRouter.RemoveHandler<Messages.Command.PutCellWorld>(Cb_PutCellWorld);
 		MessageRouter.RemoveHandler<Messages.Command.Play>(Cb_Play);
+		MessageRouter.RemoveHandler<Messages.Board.OnBoardGenerated>(Cb_OnBoardGenerated);
 
 		MessageRouter.RemoveHandler<Messages.Input.OnClick>(Cb_OnClick);
 	}
 
-	private void Cb_Play(Messages.Command.Play msg)
+
+    private void Cb_Play(Messages.Command.Play msg)
 	{
 		_b.SetTimerPlaying(msg.IsPlaying);
 	}
@@ -98,6 +103,13 @@ public class BoardComponentMailbox
 			Type = msg.Type
 		});
 	}
+
+    private void Cb_OnBoardGenerated(OnBoardGenerated obj)
+    {
+		MessageRouter.RaiseMessage(new Messages.Command.Play {
+			IsPlaying = false
+		});
+    }
 }
 
 public class BoardComponent : MonoBehaviour

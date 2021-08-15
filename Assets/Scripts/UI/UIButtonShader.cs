@@ -1,48 +1,63 @@
 using UnityEngine;
 
-public class UIButtonShader : MonoBehaviour
+namespace UI
 {
-    public int ButtonType;
-    private int _LastButtonType = -1;
-    
-    UnityEngine.UI.Image  _image;
-    UnityEngine.UI.Button _button;
-    Material              _material;
-    System.Action         _callback;
-
-    // Start is called before the first frame update
-    void Awake()
+    public class UIButtonShader : MonoBehaviour
     {
-        _image = GetComponent<UnityEngine.UI.Image>();
-        _image.material = new Material(_image.material);
-        _material = _image.material;
+        public int ButtonType;
+        private int _LastButtonType = -1;
 
-        _button = GetComponent<UnityEngine.UI.Button>();
-        _button?.onClick.AddListener(Cb_OnClick);
-    }
+        [Range(0f, 1f)]
+        public float DisappearAnimation;
+        private float _lastDisappearT;
+        
+        UnityEngine.UI.Image  _image;
+        UnityEngine.UI.Button _button;
+        Material              _material;
+        System.Action         _callback;
 
-    // Update is called once per frame
-    void Update()
-    {
-        if (ButtonType != _LastButtonType)
+        // Start is called before the first frame update
+        void Awake()
         {
-            _material.SetInt("_Button", ButtonType);
-            _LastButtonType = ButtonType;
+            _image = GetComponent<UnityEngine.UI.Image>();
+            _image.material = new Material(_image.material);
+            _material = _image.material;
+
+            _lastDisappearT = float.NegativeInfinity;
+
+            _button = GetComponent<UnityEngine.UI.Button>();
+            _button?.onClick.AddListener(Cb_OnClick);
         }
-    }
 
-    public void SetIsSelected(bool v)
-    {
-        _material?.SetInt("_Selected", v ? 1 : 0);
-    }
+        // Update is called once per frame
+        void Update()
+        {
+            if (ButtonType != _LastButtonType)
+            {
+                _material.SetInt("_Button", ButtonType);
+                _LastButtonType = ButtonType;
+            }
 
-    public void SetButtonInfo(UIPopup.Button button)
-    {
-        _callback = button.Callback;
-    }
-    
-    private void Cb_OnClick()
-    {
-        _callback?.Invoke();
+            if (Mathf.Abs(DisappearAnimation - _lastDisappearT) > float.Epsilon)
+            {
+                _material.SetFloat("_AnimDisappear", DisappearAnimation);
+                _lastDisappearT = DisappearAnimation;
+            }
+        }
+
+        public void SetIsSelected(bool v)
+        {
+            _material?.SetInt("_Selected", v ? 1 : 0);
+        }
+
+        public void SetButtonInfo(UIPopup.Button button)
+        {
+            _callback = button.Callback;
+        }
+        
+        private void Cb_OnClick()
+        {
+            _callback?.Invoke();
+        }
     }
 }
