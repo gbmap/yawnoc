@@ -4040,6 +4040,14 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2534620090582094470, guid: af9d962b2f0169c70a9ae302fdecac8d, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1077739067}
+    - target: {fileID: 2534620090582094470, guid: af9d962b2f0169c70a9ae302fdecac8d, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: Btn_Close
+      objectReference: {fileID: 0}
     - target: {fileID: 2534620090582094471, guid: af9d962b2f0169c70a9ae302fdecac8d, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: 0
