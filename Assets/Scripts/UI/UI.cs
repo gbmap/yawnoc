@@ -21,7 +21,8 @@ namespace UI
 		MainMenu,
 		LevelBrowser,
 		LevelInfo,
-		Gameplay
+		Gameplay,
+		GameOver,
 	}
 
     public class UI : MonoBehaviour

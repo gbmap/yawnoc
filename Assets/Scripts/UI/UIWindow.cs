@@ -37,6 +37,10 @@ namespace UI
         protected virtual void Awake()
         {
             _visibles = new UIVisibleCollection(gameObject);
+        }
+
+        protected virtual void Start()
+        {
             if (IsActive)
                 Show();
             else

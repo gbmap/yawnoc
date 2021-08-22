@@ -34,7 +34,7 @@ namespace UI
         {
             if (ButtonType != _LastButtonType)
             {
-                _material.SetInt("_Button", ButtonType);
+                _material.SetFloat("_Button", ButtonType);
                 _LastButtonType = ButtonType;
             }
 
@@ -47,7 +47,7 @@ namespace UI
 
         public void SetIsSelected(bool v)
         {
-            _material?.SetInt("_Selected", v ? 1 : 0);
+            _material?.SetFloat("_Selected", v ? 1 : 0);
         }
 
         public void SetButtonInfo(UIPopup.Button button)

@@ -39,6 +39,7 @@ namespace UI
 
 		public void SetAmount(int count)
 		{
+			if (!_text) return;
 			_text.text = count.ToString();
 		}
 

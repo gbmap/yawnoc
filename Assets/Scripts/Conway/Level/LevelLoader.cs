@@ -134,8 +134,8 @@ namespace Conway
         private void Cb_LoadLevel(LoadLevel obj)
         {
 			Load(obj.Level, Ruleset, Style);
-			MessageRouter.RaiseMessage(new Messages.Gameplay.ChangeState {
-				State = Messages.Gameplay.State.Gameplay
+			MessageRouter.RaiseMessage(new Messages.UI.OnUIChangeState {
+				State = UI.EUIState.Gameplay
 			});
         }
 

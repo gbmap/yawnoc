@@ -179,7 +179,7 @@ float _triside(fixed2 uv, float a)
 {
     a = radians(a);
     float sa = dot(uv, fixed2(cos(a), sin(a)));
-    sa = 1.-step(-0.0, sa);
+    sa = 1.-step(0.0, sa);
     return sa;
 }
 
@@ -221,7 +221,7 @@ float icon_win(fixed2 uv)
     fixed2 uvb = uv;
     uvb.y += .695;
     uvb.x *= 1.115;
-    float bt = step(0.5, (1.-abs(uvb.y*3.5))-abs(uvb.x*uvb.x));
+    float bt = step(0.5, (1. - abs(uvb.y*3.5))-abs(uvb.x*uvb.x));
 
     uvb.y -= .035;
     uvb.x *= 1.1;

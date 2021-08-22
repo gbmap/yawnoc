@@ -43,7 +43,7 @@ namespace UI
                 Level = _levelInfo.Level
             });
 
-            Hide();
+            // Hide();
         }
     }
 }

@@ -144,17 +144,6 @@ namespace Messages
         public class OnGameWon {}
 		public class OnGameLost {}
 
-		public enum State
-		{
-			Menu,
-			Gameplay
-		}
-
-		public class ChangeState
-		{
-			public State State;
-		}
-
 		public class LoadLevel
 		{
 			public Conway.Data.Level Level;
