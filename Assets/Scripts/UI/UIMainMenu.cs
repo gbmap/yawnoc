@@ -12,7 +12,7 @@ namespace UI
         
         public void Cb_OnPlayClick()
         {
-            MessageRouter.RaiseMessage(new Messages.UI.OnUIChangeState {
+            MessageRouter.RaiseMessage(new Messages.UI.OnChangeState {
                 State = EUIState.LevelBrowser
             });
         }

@@ -22,6 +22,7 @@ namespace UI
             _image = GetComponent<UnityEngine.UI.Image>();
             _image.material = new Material(_image.material);
             _material = _image.material;
+            UpdateIcon();
 
             _lastDisappearT = float.NegativeInfinity;
 
@@ -29,13 +30,17 @@ namespace UI
             _button?.onClick.AddListener(Cb_OnClick);
         }
 
+        void OnEnable()
+        {
+            UpdateIcon();
+        }
+
         // Update is called once per frame
         void Update()
         {
             if (ButtonType != _LastButtonType)
             {
-                _material.SetFloat("_Button", ButtonType);
-                _LastButtonType = ButtonType;
+                UpdateIcon();
             }
 
             if (Mathf.Abs(DisappearAnimation - _lastDisappearT) > float.Epsilon)
@@ -43,6 +48,12 @@ namespace UI
                 _material.SetFloat("_AnimDisappear", DisappearAnimation);
                 _lastDisappearT = DisappearAnimation;
             }
+        }
+
+        private void UpdateIcon()
+        {
+            _material.SetFloat("_Button", ButtonType);
+            _LastButtonType = ButtonType;
         }
 
         public void SetIsSelected(bool v)
@@ -53,6 +64,7 @@ namespace UI
         public void SetButtonInfo(UIPopup.Button button)
         {
             _callback = button.Callback;
+            ButtonType = button.Icon;
         }
         
         private void Cb_OnClick()

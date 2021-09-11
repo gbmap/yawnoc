@@ -29,10 +29,8 @@ namespace UI
 
         private void Cb_ShowLevelPopup(ShowLevelPopup msg)
         {
-            Debug.Log("Show level info popup.");
-
             _levelInfo.Level = msg.Level;
-            MessageRouter.RaiseMessage(new Messages.UI.OnUIChangeState {
+            MessageRouter.RaiseMessage(new Messages.UI.OnChangeState {
                 State = EUIState.LevelInfo
             });
         }
@@ -40,10 +38,9 @@ namespace UI
         public void Cb_PlayClick()
         {
             MessageRouter.RaiseMessage(new Messages.Gameplay.LoadLevel {
-                Level = _levelInfo.Level
+                Level = _levelInfo.Level,
+                UpdateUIState = true
             });
-
-            // Hide();
         }
     }
 }

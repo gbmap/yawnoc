@@ -1,10 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Frictionless;
 using Input = InputWrapper.Input;
 using Messages.Input;
 using System;
+using Messages.UI;
 
 [RequireComponent(typeof(Camera))]
 public class CameraComponent : MonoBehaviour
@@ -34,6 +33,8 @@ public class CameraComponent : MonoBehaviour
 
 	Camera _camera;
 
+	private bool _isOnGameplay;
+
 	void Awake()
 	{
 		_camera = GetComponent<Camera>();
@@ -44,6 +45,8 @@ public class CameraComponent : MonoBehaviour
 		MessageRouter.AddHandler<Messages.Board.OnBoardGenerated>(Cb_OnBoardGenerated);
 		MessageRouter.AddHandler<Messages.Command.SetCameraAcceleration>(Cb_SetCameraAcceleration);
 		MessageRouter.AddHandler<Messages.Input.OnPinch>(Cb_OnPinch);
+		MessageRouter.AddHandler<Messages.Input.OnClickUpdate>(Cb_OnTouchUpdate);
+		MessageRouter.AddHandler<Messages.UI.OnChangeState>(Cb_OnChangeState);
 	}
 
 	void OnDisable()
@@ -51,8 +54,14 @@ public class CameraComponent : MonoBehaviour
 		MessageRouter.RemoveHandler<Messages.Board.OnBoardGenerated>(Cb_OnBoardGenerated);
 		MessageRouter.RemoveHandler<Messages.Command.SetCameraAcceleration>(Cb_SetCameraAcceleration);
 		MessageRouter.RemoveHandler<Messages.Input.OnPinch>(Cb_OnPinch);
+		MessageRouter.RemoveHandler<Messages.Input.OnClickUpdate>(Cb_OnTouchUpdate);
+		MessageRouter.RemoveHandler<Messages.UI.OnChangeState>(Cb_OnChangeState);
 	}
 
+    private void Cb_OnChangeState(OnChangeState obj)
+    {
+		_isOnGameplay = obj.State == UI.EUIState.Gameplay;
+    }
 
     private void Cb_OnBoardGenerated(Messages.Board.OnBoardGenerated msg)
 	{
@@ -89,18 +98,17 @@ public class CameraComponent : MonoBehaviour
 		_camera.orthographicSize += ZoomVelocity * Time.deltaTime;
 		// Debug.Log(_camera.orthographicSize);
 
-		if (Input.touchCount == 0)
-			return;
-
-		Touch touch = Input.GetTouch(0);
-
-		Vector3 acc = -touch.deltaPosition;
-		Acceleration = acc;
     }
 
     private void Cb_OnPinch(OnPinch obj)
     {
 		Debug.Log("Pinch.");
 		ZoomAcceleration = obj.DeltaDistance;
+    }
+
+    private void Cb_OnTouchUpdate(OnClickUpdate msg)
+    {
+		if (!_isOnGameplay) return;
+		Acceleration = -msg.DeltaPosition;
     }
 }

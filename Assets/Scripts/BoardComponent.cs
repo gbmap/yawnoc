@@ -5,6 +5,7 @@ using Conway;
 using Messages.Input;
 using Messages.Board;
 using System;
+using Messages.UI;
 
 public class CellData
 {
@@ -19,11 +20,14 @@ public class CellData
 public class BoardComponentMailbox
 {
 	BoardComponent _b;
+	bool _isOnGameplay;
+
 	public BoardComponentMailbox(BoardComponent c)
 	{
 		_b = c;
 		MessageRouter.AddHandler<Messages.UI.OnPlayButtonClick>(Cb_OnPlayButtonClick);
 		MessageRouter.AddHandler<Messages.UI.OnStepButtonClick>(Cb_OnStepButtonClick);
+		MessageRouter.AddHandler<Messages.UI.OnChangeState>(Cb_OnChangeState);
 
 		MessageRouter.AddHandler<Messages.Command.PutCell>(Cb_PutCell); 
 		MessageRouter.AddHandler<Messages.Command.PutCellWorld>(Cb_PutCellWorld);
@@ -37,6 +41,7 @@ public class BoardComponentMailbox
 	{
 		MessageRouter.RemoveHandler<Messages.UI.OnPlayButtonClick>(Cb_OnPlayButtonClick);
 		MessageRouter.RemoveHandler<Messages.UI.OnStepButtonClick>(Cb_OnStepButtonClick);
+		MessageRouter.RemoveHandler<Messages.UI.OnChangeState>(Cb_OnChangeState);
 
 		MessageRouter.RemoveHandler<Messages.Command.PutCell>(Cb_PutCell);
 		MessageRouter.RemoveHandler<Messages.Command.PutCellWorld>(Cb_PutCellWorld);
@@ -46,7 +51,10 @@ public class BoardComponentMailbox
 		MessageRouter.RemoveHandler<Messages.Input.OnClick>(Cb_OnClick);
 	}
 
-
+    private void Cb_OnChangeState(Messages.UI.OnChangeState obj)
+    {
+		_isOnGameplay = obj.State == UI.EUIState.Gameplay;
+    }
     private void Cb_Play(Messages.Command.Play msg)
 	{
 		_b.SetTimerPlaying(msg.IsPlaying);
@@ -56,10 +64,10 @@ public class BoardComponentMailbox
     {
 		Vector2Int pos = _b.WorldToBoard(obj.WorldPosition); 
 		if (!_b.IsInsideBoard(pos))
-		{
-			Debug.Log("Not inside board.");
 			return; 
-		}
+
+		if (obj.IsClickOnUI) 
+			return;
 
 		MessageRouter.RaiseMessage(new Messages.Command.SelectCell {
 			Position = pos,
@@ -88,6 +96,9 @@ public class BoardComponentMailbox
 		if (!_b.Board.SetCell(msg.Position, msg.Type))
 			return;
 
+		if (!_isOnGameplay)
+			return;
+
 		MessageRouter.RaiseMessage(new Messages.Board.OnCellPlaced {
 			Cell = msg.Type
 		});
@@ -96,7 +107,6 @@ public class BoardComponentMailbox
 	private void Cb_PutCellWorld(Messages.Command.PutCellWorld msg)
 	{
 		Vector2Int boardPosition = _b.WorldToBoard(msg.WorldPosition);
-		Debug.Log(msg.WorldPosition);
 
 		MessageRouter.RaiseMessage(new Messages.Command.PutCell {
 			Position = boardPosition,

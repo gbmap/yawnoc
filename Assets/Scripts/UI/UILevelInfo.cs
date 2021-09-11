@@ -38,8 +38,6 @@ namespace UI
 
         void Cb_OnInfoClicked()
         {
-            Debug.Log("Show level info.");
-
             MessageRouter.RaiseMessage(
                 new Messages.UI.ShowLevelPopup {
                     Level = this.Level

@@ -62,6 +62,7 @@ namespace Messages
 		{
 			public Vector3 ScreenPosition;
 			public Vector3 WorldPosition;
+			public bool    IsClickOnUI;
 		}
 
 		public class OnClickUpdate
@@ -71,6 +72,9 @@ namespace Messages
 
 			public Vector3 Position;
 			public Vector3 WorldPosition;
+
+			public Vector3 DeltaPosition;
+			public Vector3 WorldDeltaPosition;
 		}
 
 		public class OnHold
@@ -147,10 +151,12 @@ namespace Messages
 		public class LoadLevel
 		{
 			public Conway.Data.Level Level;
+			public bool UpdateUIState;
 		}
 
 		public class ResetLevel
 		{
+			public bool UpdateUIState;
 		}
 	}
 
@@ -181,7 +187,7 @@ namespace Messages
 			public Conway.Data.Level Level;
 		}
 
-		public class OnUIChangeState
+		public class OnChangeState
 		{
 			public UIGame.EUIState State;
 		}

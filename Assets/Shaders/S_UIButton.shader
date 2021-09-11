@@ -179,7 +179,7 @@ Shader "Unlit/S_UIButton"
             fixed4 frag(v2f IN) : SV_Target
             {
                 // simple antialiasing of the frame
-                // return fixed4(1., 1., 1., 1.);
+                //return fixed4(1., 1., 1., 1.);
                 fixed2 uv = IN.texcoord;
                 float ddx = fwidth(uv.x)*0.5;
                 float ddy = fwidth(uv.y)*0.5;

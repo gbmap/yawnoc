@@ -53,6 +53,7 @@ public class MouseBuilderBehaviour : BuilderBehaviour
 
     public override void Cb_OnClick(OnClick msg)
     {
+		if (msg.IsClickOnUI) return;
 		PlaceCell(msg.WorldPosition);
     }
 }
@@ -147,17 +148,6 @@ public class BuilderComponent : MonoBehaviour
     void Cb_OnResourceSelected(Messages.Command.SelectResource msg)
 	{
 		Brush = msg.Resource;
-	}
-
-	void Cb_OnClick(Messages.Input.OnClick msg)
-	{
-		var resource = Resources.Get(Brush);
-		if (resource.Count <= 0) return;
-
-		MessageRouter.RaiseMessage(new Messages.Command.PutCellWorld{
-			WorldPosition = msg.WorldPosition,
-			Type = Brush
-		});
 	}
 
     void Cb_OnCellPlaced(OnCellPlaced obj)

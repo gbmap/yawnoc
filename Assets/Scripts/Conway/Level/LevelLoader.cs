@@ -45,13 +45,13 @@ namespace Conway
 			if (Style == null)
 				Style = Config.BoardStyle.Default;
 
-			Load(Level, Ruleset, Style);
+			Load(Level, Ruleset, Style, false);
 		}
 
 		void Update()
 		{
 			if (Input.GetKeyDown(KeyCode.L) && Level != null)
-				Load(Level, Ruleset, Style);
+				MessageRouter.RaiseMessage(new Messages.Gameplay.ResetLevel { UpdateUIState=true });
 				
 			if (Input.GetKeyDown(KeyCode.C))
 				_boardComponent.GenerateBoard(new Conway.Board(Size, Ruleset));
@@ -60,11 +60,19 @@ namespace Conway
 		void Load(
 			Data.Level level, 
 			Rules.Ruleset ruleset,
-			Config.BoardStyle style
+			Config.BoardStyle style,
+			bool updateUIState
 		) {
 			LoadGamemode(level);
 			LoadBoard(level, ruleset, style);
 			LoadBuilder(level);
+
+			if (updateUIState)
+			{
+				MessageRouter.RaiseMessage(new Messages.UI.OnChangeState {
+					State = UI.EUIState.Gameplay
+				});
+			}
 		}
 
 		void LoadBoard(
@@ -131,17 +139,14 @@ namespace Conway
 			MessageRouter.RemoveHandler<Messages.Gameplay.ResetLevel>(Cb_ResetLevel);
 		}
 
-        private void Cb_LoadLevel(LoadLevel obj)
+        private void Cb_LoadLevel(LoadLevel msg)
         {
-			Load(obj.Level, Ruleset, Style);
-			MessageRouter.RaiseMessage(new Messages.UI.OnUIChangeState {
-				State = UI.EUIState.Gameplay
-			});
+			Load(msg.Level, Ruleset, Style, msg.UpdateUIState);
         }
 
-        private void Cb_ResetLevel(ResetLevel obj)
+        private void Cb_ResetLevel(ResetLevel msg)
         {
-			Load(this.Level, Ruleset, Style);
+			Load(this.Level, Ruleset, Style, msg.UpdateUIState);
         }
 
     }

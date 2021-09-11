@@ -21,6 +21,13 @@ namespace Controls
 		bool hasFiredHoldEvent;
 
 		float _lastZoomDistance;
+
+		UI.UIRoot _uiRoot;
+
+		void OnEnable()
+		{
+			_uiRoot = FindObjectOfType<UI.UIRoot>();
+		}
 		
 		void Update()
 		{
@@ -92,17 +99,15 @@ namespace Controls
 				hasFiredHoldEvent = true;
 			}
 
-			OnClickUpdate(startPosition, touch.position);
+			OnTouchUpdate(startPosition, touch.position, touch.deltaPosition);
 		}
 
 		void StopTouch()
 		{
 			lastClickState    = false;
 			clickEndTime      = Time.time;
-			endPosition       = endPosition;
 			hasFiredHoldEvent = false;
 
-			Debug.Log("Stop.");
 			float clickTime = Mathf.Abs(clickStartTime - clickEndTime); 
 			Vector3 delta   = endPosition - startPosition;
 
@@ -118,18 +123,24 @@ namespace Controls
 			MessageRouter.RaiseMessage(new Messages.Input.OnClick
 			{
 				ScreenPosition = position,
-				WorldPosition = Camera.main.ScreenToWorldPoint(position)
+				WorldPosition  = Camera.main.ScreenToWorldPoint(position),
+				IsClickOnUI    = _uiRoot ? _uiRoot.IsTouchOnUI : false
 			});
 		}
 
-		void OnClickUpdate(Vector3 startPosition, Vector3 position)
-		{
+		void OnTouchUpdate(
+			Vector3 startPosition, 
+			Vector3 position,
+			Vector3 deltaPosition
+		) {
 			MessageRouter.RaiseMessage(new Messages.Input.OnClickUpdate
 			{
 				StartPosition      = startPosition,
 				StartWorldPosition = Camera.main.ScreenToWorldPoint(startPosition),
 				Position           = position,
-				WorldPosition      = Camera.main.ScreenToWorldPoint(position)
+				WorldPosition      = Camera.main.ScreenToWorldPoint(position),
+				DeltaPosition      = deltaPosition,
+				WorldDeltaPosition = Camera.main.ScreenToWorldPoint(deltaPosition)
 			});
 		}
 
@@ -152,6 +163,8 @@ namespace Controls
 			GUILayout.Label($"{endPosition}");
 			GUILayout.Label($"{lastClickState}");
 			GUILayout.Label($"{hasFiredHoldEvent}");
+			if (_uiRoot)
+				GUILayout.Label($"{_uiRoot.IsTouchOnUI}");
 		}
 	}
 }

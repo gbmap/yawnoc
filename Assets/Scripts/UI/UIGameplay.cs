@@ -3,6 +3,7 @@ using Frictionless;
 using Messages.Command;
 using Messages.Gameplay;
 using System.Collections;
+using UnityEngine.EventSystems;
 
 namespace UI
 {
@@ -25,7 +26,7 @@ namespace UI
 		GameOver,
 	}
 
-    public class UI : MonoBehaviour
+    public class UIGameplay : MonoBehaviour
 	{
 		public UIButtonShader PlayButtonShader;
 		public UIPopup Popup;
@@ -63,7 +64,7 @@ namespace UI
 		IEnumerator Coroutine_Victory()
 		{
 			yield return new WaitForSeconds(0.75f);
-			Popup.Show(5, new UIPopup.Button[] {
+			ShowWindow(5, new UIPopup.Button[] {
 				new UIPopup.Button {
 					 Icon = 0,
 					 Callback = BtnClick_NextLevel 
@@ -71,7 +72,7 @@ namespace UI
 
 				new UIPopup.Button {
 					Icon = 4,
-					Callback = BtnClick_Replay
+					Callback = BtnClick_Reset
 				},
 
 				new UIPopup.Button {
@@ -79,7 +80,6 @@ namespace UI
 					Callback = BtnClick_Exit
 				}
 			});
-			Popup.gameObject.GetComponent<Animator>().SetTrigger("Show");
 		}
 
         private void Cb_OnGameLost(OnGameLost obj)
@@ -93,10 +93,10 @@ namespace UI
 		IEnumerator Coroutine_Defeat()
 		{
 			yield return new WaitForSeconds(0.75f);
-			Popup.Show(5, new UIPopup.Button[] {
+			ShowWindow(1, new UIPopup.Button[] {
 				new UIPopup.Button {
 					Icon = 4,
-					Callback = BtnClick_Replay
+					Callback = BtnClick_Reset
 				},
 
 				new UIPopup.Button {
@@ -104,7 +104,15 @@ namespace UI
 					Callback = BtnClick_Exit
 				}
 			});
-			Popup.gameObject.GetComponent<Animator>().SetTrigger("Show");
+		}
+
+		private void ShowWindow(int icon, UIPopup.Button[] buttons)
+		{
+			Popup.SetInfo(icon, buttons);
+
+			MessageRouter.RaiseMessage(new Messages.UI.OnChangeState {
+				State = EUIState.GameOver
+			});
 		}
 
 		public void BtnClick_Play()
@@ -119,8 +127,10 @@ namespace UI
 
 		public void BtnClick_Reset()
 		{
-			MessageRouter.RaiseMessage(new Messages.UI.OnResetButtonClick());
-			MessageRouter.RaiseMessage(new Messages.Gameplay.ResetLevel());
+			MessageRouter.RaiseMessage(new Messages.Gameplay.ResetLevel()
+			{
+				UpdateUIState = true
+			});
 		}
 
 		private void BtnClick_NextLevel()
@@ -131,19 +141,15 @@ namespace UI
 			if (levelLoader.LevelCollection.NextLevel(levelLoader.Level, out nextLevel))
 			{
 				MessageRouter.RaiseMessage(new Messages.Gameplay.LoadLevel {
-					Level = nextLevel
+					Level = nextLevel,
+					UpdateUIState = true
 				});
 			}
-		}
-
-		private void BtnClick_Replay()
-		{
-			MessageRouter.RaiseMessage(new Messages.Gameplay.ResetLevel());
 		}
 
 		public void BtnClick_Exit()
 		{
 			Debug.Log("Exit");
 		}
-	}
+    }
 }

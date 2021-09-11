@@ -25,6 +25,11 @@ namespace Conway
             MessageRouter.AddHandler<Messages.Board.OnStep>(Cb_OnStep);
         }
 
+        void OnDestroy()
+        {
+            MessageRouter.RemoveHandler<Messages.Board.OnStep>(Cb_OnStep);
+        }
+
         private void Cb_OnStep(OnStep msg)
         {
             if (_finished) 

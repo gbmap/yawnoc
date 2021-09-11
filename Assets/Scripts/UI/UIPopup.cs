@@ -1,6 +1,6 @@
-using UnityEngine;
 
-namespace UI 
+
+namespace UI
 {
     public class UIPopup : UIWindow
     {
@@ -14,10 +14,8 @@ namespace UI
         public UIButtonShader[] Buttons;
         private UIVisible _visible;
 
-        public void Show(int icon, UIPopup.Button[] buttons)
+        public void SetInfo(int icon, UIPopup.Button[] buttons)
         {
-            Show(0.5f);
-
             Icon.ButtonType = icon;
             for (int i = 0; i < Buttons.Length; i++)
             {
@@ -33,7 +31,6 @@ namespace UI
                 }
             }
 
-            _visible?.Show();
         }
     }
 }

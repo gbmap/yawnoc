@@ -4,7 +4,6 @@ using UnityEngine;
 
 namespace UI
 {
-
     public class UIVisibleCollection
     {
         UIVisible[] _visibles;
@@ -49,12 +48,12 @@ namespace UI
 
         protected virtual void OnEnable()
         {
-            MessageRouter.AddHandler<Messages.UI.OnUIChangeState>(Cb_OnUIStateChange);
+            MessageRouter.AddHandler<Messages.UI.OnChangeState>(Cb_OnUIStateChange);
         }
 
         protected virtual void OnDisable()
         {
-            MessageRouter.RemoveHandler<Messages.UI.OnUIChangeState>(Cb_OnUIStateChange);
+            MessageRouter.RemoveHandler<Messages.UI.OnChangeState>(Cb_OnUIStateChange);
         }
 
         public void Show(float delay = 0f)
@@ -81,7 +80,7 @@ namespace UI
 
         public void ChangeState(EUIState state)
         {
-            MessageRouter.RaiseMessage(new Messages.UI.OnUIChangeState {
+            MessageRouter.RaiseMessage(new Messages.UI.OnChangeState {
                 State = state
             });
         }
@@ -91,11 +90,12 @@ namespace UI
             ChangeState(CloseButtonStateChange);
         }
 
-        private void Cb_OnUIStateChange(Messages.UI.OnUIChangeState msg)
+        private void Cb_OnUIStateChange(Messages.UI.OnChangeState msg)
         {
-            if (msg.State == ShowOnState && !IsActive)
+            bool isConfiguredState = msg.State == ShowOnState;
+            if (isConfiguredState && !IsActive)
                 Show();
-            else if (IsActive)
+            else if (!isConfiguredState && IsActive)
                 Hide();
         }
     }
