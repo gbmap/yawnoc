@@ -4,6 +4,8 @@ using UnityEngine;
 
 namespace Conway
 {
+    public class GamemodeState {}
+
     public abstract class Gamemode : ScriptableObject
     {
         protected enum EState
@@ -13,45 +15,31 @@ namespace Conway
             Win
         }
 
-        protected BoardComponent _component;
-        protected abstract EState GetState();
+        public abstract GamemodeState Begin(BoardComponent component);
+        protected abstract EState GetState(GamemodeState state);
 
-        private bool _finished;
-
-        public virtual void Begin(BoardComponent component)
+        public bool OnStep(GamemodeState state, OnStep msg)
         {
-            _component = component;
-
-            MessageRouter.AddHandler<Messages.Board.OnStep>(Cb_OnStep);
-        }
-
-        void OnDestroy()
-        {
-            MessageRouter.RemoveHandler<Messages.Board.OnStep>(Cb_OnStep);
-        }
-
-        private void Cb_OnStep(OnStep msg)
-        {
-            if (_finished) 
-                return;
-
-            EState state = GetState();
-            switch (state)
+            EState stt = GetState(state);
+            switch (stt)
             {
                 case EState.Win: Win(); break;
                 case EState.GameOver: GameOver(); break;
-                default: return;
+                default: return false;
             }
 
-            _finished = true;
+            return true;
         }
 
-        protected void GameOver()
+        public virtual void OnCellChanged(GamemodeState state, Messages.Board.OnCellChanged msg) {}
+        public virtual void OnResourcesDepleted(GamemodeState state, Messages.Builder.OnBuilderResourcesDepleted msg) {}
+
+        protected virtual void GameOver()
         {
             MessageRouter.RaiseMessage(new Messages.Gameplay.OnGameLost {});
         }
 
-        protected void Win()
+        protected virtual void Win()
         {
             MessageRouter.RaiseMessage(new Messages.Gameplay.OnGameWon {});
         }

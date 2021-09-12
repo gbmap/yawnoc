@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: 05
   m_EditorClassIdentifier: 
   Mode: 0
+  Gamemode: {fileID: 11400000, guid: dfe091d7a2d4fd9d99ec506d07d7ceed, type: 2}
   Resources:
   - Type: 1
     Count: 3

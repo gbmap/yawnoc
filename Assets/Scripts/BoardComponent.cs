@@ -220,7 +220,10 @@ public class BoardComponent : MonoBehaviour
 	public Vector2Int WorldToBoard(Vector3 position)
 	{
 		var bp  = WorldToBoardF(position);
-		return new Vector2Int(Mathf.FloorToInt(bp.x), Mathf.FloorToInt(bp.y));
+		return new Vector2Int(
+			Mathf.FloorToInt(bp.x), 
+			Mathf.FloorToInt(bp.y)
+		);
 	}
 
 	public Vector2 WorldToBoardF(Vector3 position)

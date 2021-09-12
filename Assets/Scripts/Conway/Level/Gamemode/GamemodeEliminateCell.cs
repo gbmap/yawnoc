@@ -39,26 +39,28 @@ namespace Conway
             _count = Mathf.Max(_count, _idx);
         }
     }
+
+    public class GamemodeEliminateCellState : GamemodeState
+    {
+        public Dictionary<ECellType, int> CurrentCells = new Dictionary<ECellType, int>();
+        public CircularBuffer<int> LastAliveCells;
+        public bool ResourcesDepleted;
+    }
     
     public class GamemodeEliminateCell : Gamemode
     {
         public ECellType[] TargetCells;
 
-        private Dictionary<ECellType, int> CurrentCells;
-        private CircularBuffer<int> LastAliveCells;
-        private bool _resourcesDepleted;
-
-        public override void Begin(BoardComponent component)
+        public override GamemodeState Begin(BoardComponent component)
         {
-            base.Begin(component);
+            GamemodeEliminateCellState state = new GamemodeEliminateCellState();
+            state.CurrentCells = new Dictionary<ECellType, int>();
+            state.CurrentCells[ECellType.Alive] = 0;
+            System.Array.ForEach(TargetCells, x => state.CurrentCells[x] = 0);
 
-            CurrentCells = new Dictionary<ECellType, int>();
-            CurrentCells[ECellType.Alive] = 0;
-            System.Array.ForEach(TargetCells, x => CurrentCells[x] = 0);
-
-            LastAliveCells = new CircularBuffer<int>(10);
-            for (int i = 0; i < LastAliveCells.Count; i++)
-                LastAliveCells.Push(i%2);
+            state.LastAliveCells = new CircularBuffer<int>(100);
+            for (int i = 0; i < state.LastAliveCells.Count; i++)
+                state.LastAliveCells.Push(i%2);
 
             component.Board.ForEachCell(delegate(Board.ForEachCellParams p)
             {
@@ -66,68 +68,88 @@ namespace Conway
                     return;
 
                 int cellCount = -1;
-                if (!CurrentCells.TryGetValue(p.State, out cellCount))
+                if (!state.CurrentCells.TryGetValue(p.State, out cellCount))
                     return;
                 
-                CurrentCells[p.State] = cellCount + 1;
+                state.CurrentCells[p.State] = cellCount + 1;
             });
 
-            MessageRouter.AddHandler<Messages.Board.OnCellChanged>(
-                Cb_OnCellChanged
-            );
-
-            MessageRouter.AddHandler<Messages.Builder.OnBuilderResourcesDepleted>(
-                Cb_OnResourcesDepleted
-            );
+            return state;
         }
 
-        protected override EState GetState()
+        protected override EState GetState(GamemodeState currentState)
         {
-            bool noMoreTargetCells = CurrentCells.Where(
+            GamemodeEliminateCellState state = currentState as GamemodeEliminateCellState;
+
+            bool noMoreTargetCells = state.CurrentCells.Where(
                 x=> TargetCells.Contains(x.Key)
             ).All(x=>x.Value == 0);
 
             if (noMoreTargetCells)
                 return EState.Win;
 
-            LastAliveCells.Push(CurrentCells[ECellType.Alive]);
-            int lastCount = LastAliveCells.Get(0);
+            state.LastAliveCells.Push(state.CurrentCells[ECellType.Alive]);
+            int lastCount = state.LastAliveCells.Get(0);
             bool isConstant = true;
-            for (int i = 0; i < LastAliveCells.Size; i++)
+            for (int i = 0; i < state.LastAliveCells.Size; i++)
             {
-                int v = LastAliveCells.Get(i);
+                int v = state.LastAliveCells.Get(i);
                 if (lastCount != v)
                 {
                     isConstant = false;
                     break;
                 }
 
-                lastCount = LastAliveCells.Get(i);
+                lastCount = state.LastAliveCells.Get(i);
             }
             
-            bool noLiveCells = CurrentCells[ECellType.Alive] == 0;
+            bool noLiveCells = state.CurrentCells[ECellType.Alive] == 0;
+            bool resourcesDepleted = state.ResourcesDepleted;
 
-            if (_resourcesDepleted && (noLiveCells || isConstant))
+            if (resourcesDepleted && (noLiveCells || isConstant))
+            {
+                Debug.Log($"[{this.GetInstanceID()}] Defeat. \n Resources Depleted: {resourcesDepleted} \n No Live Cells: {noLiveCells} \n Is Constant: {isConstant} ");
                 return EState.GameOver;
+            }
 
             return EState.Playing;
         }
 
-        private void Cb_OnCellChanged(Messages.Board.OnCellChanged msg)
-        {
-            ECellType cell = msg.OldType;
+        public override void OnCellChanged(
+            GamemodeState currentState, 
+            Messages.Board.OnCellChanged msg
+        ) {
+            base.OnCellChanged(currentState, msg);
 
-            int cellCount = -1;
-            if (!CurrentCells.TryGetValue(cell, out cellCount))
+            GamemodeEliminateCellState state = 
+                currentState as GamemodeEliminateCellState;
+
+            ECellType cellOld = msg.OldType;
+            ECellType cellNew = msg.NewType;
+            bool watchedOld = state.CurrentCells.ContainsKey(cellOld);
+            bool watchedNew = state.CurrentCells.ContainsKey(cellNew);
+
+            if (!watchedOld && !watchedNew)
                 return;
 
-            CurrentCells[cell] = cellCount-1;
-            LastAliveCells.Push(CurrentCells[ECellType.Alive]);
+            if (cellOld == ECellType.Collectible &&
+                cellNew != ECellType.Collectible)
+                state.ResourcesDepleted = false;
+
+            if (watchedOld)
+                state.CurrentCells[cellOld] = state.CurrentCells[cellOld]-1;
+
+            if (watchedNew)
+                state.CurrentCells[cellNew] = state.CurrentCells[cellNew]+1;
+
+            state.LastAliveCells.Push(state.CurrentCells[ECellType.Alive]);
         }
 
-        private void Cb_OnResourcesDepleted(OnBuilderResourcesDepleted obj)
+        public override void OnResourcesDepleted(GamemodeState currentState, OnBuilderResourcesDepleted obj)
         {
-            _resourcesDepleted = true; 
+            base.OnResourcesDepleted(currentState, obj);
+            GamemodeEliminateCellState state = currentState as GamemodeEliminateCellState;
+            state.ResourcesDepleted = true;
         }
     }
 }

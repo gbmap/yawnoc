@@ -63,8 +63,8 @@ namespace Conway
 			Config.BoardStyle style,
 			bool updateUIState
 		) {
-			LoadGamemode(level);
 			LoadBoard(level, ruleset, style);
+			LoadGamemode(_boardComponent, level);
 			LoadBuilder(level);
 
 			if (updateUIState)
@@ -114,17 +114,18 @@ namespace Conway
 			_builderComponent.SetResources(new Conway.Builder.BuildResources(level.Resources));
 		}
 
-		void LoadGamemode(Data.Level level)
+		void LoadGamemode(BoardComponent component, Data.Level level)
 		{
-			if (level.Mode == ELevelMode.None)
+			if (level.Gamemode == null)
 				return;
 
 			var gamemode = gameObject.GetComponent<GamemodeComponent>();
-			if (gamemode)
-				Destroy(gamemode);
 
-			gamemode = gameObject.AddComponent<GamemodeComponent>();
-			gamemode.Gamemode = Resources.Load<Gamemode>("Data/Gamemodes/GamemodeEliminateCell");
+			if (!gamemode)
+				gamemode = gameObject.AddComponent<GamemodeComponent>();
+
+			var rsrcGamemode = Resources.Load<Gamemode>("Data/Gamemodes/GamemodeEliminateCell");
+			gamemode.Begin(rsrcGamemode, component);
 		}
 
 		void OnEnable()

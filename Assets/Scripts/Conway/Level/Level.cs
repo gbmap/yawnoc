@@ -8,6 +8,7 @@ namespace Conway.Data
 	public abstract class Level : ScriptableObject
 	{
 		public ELevelMode Mode;
+		public Gamemode Gamemode;
 		public List<BuildResource> Resources;
 
 		public abstract Conway.Board Load(Conway.Config.BoardStyle style);
