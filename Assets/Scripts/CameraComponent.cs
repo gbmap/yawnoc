@@ -20,7 +20,7 @@ public class CameraComponent : MonoBehaviour
 	[Range(0f, 1f)]
 	public float VelocityDamping = 0.35f;
 
-	public float Zoom;
+	// public float Zoom;
 
 	[Range(0f, 1f)]
 	public float ZoomAcceleration;
@@ -90,7 +90,7 @@ public class CameraComponent : MonoBehaviour
 		transform.position += Velocity * Time.deltaTime;
 
 		ZoomAcceleration -= (Input.mouseScrollDelta.y)
-						   *(Mathf.Abs(Input.mouseScrollDelta.y))*2f;
+						   *(Mathf.Abs(Input.mouseScrollDelta.y))*2f*_camera.orthographicSize;
 
 		ZoomVelocity 	 += ZoomAcceleration;
 		ZoomVelocity 	 *= 1f - ZoomDamping;
@@ -109,6 +109,6 @@ public class CameraComponent : MonoBehaviour
     private void Cb_OnTouchUpdate(OnClickUpdate msg)
     {
 		if (!_isOnGameplay) return;
-		Acceleration = -msg.DeltaPosition;
+		Acceleration = -msg.DeltaPosition * _camera.orthographicSize;
     }
 }

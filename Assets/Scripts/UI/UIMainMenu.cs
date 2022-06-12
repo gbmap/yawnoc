@@ -9,12 +9,29 @@ namespace UI
     {
         public UIWindow LevelLoader;
 
+        Coroutine _coroutine;
         
         public void Cb_OnPlayClick()
         {
-            MessageRouter.RaiseMessage(new Messages.UI.OnChangeState {
-                State = EUIState.LevelBrowser
-            });
+            if (_coroutine != null)
+                return;
+
+            _coroutine = StartCoroutine(Coroutine_Play());
+        }
+
+        IEnumerator Coroutine_Play()
+        {
+            MessageRouter.RaiseMessage(new Messages.Command.Play { IsPlaying = true });
+
+            yield return new WaitForSeconds(2f);
+
+            MessageRouter.RaiseMessage(
+                new Messages.UI.OnChangeState {
+                    State = EUIState.LevelBrowser
+                }
+            );
+
+            _coroutine = null;
         }
         
         public void Cb_OnHelpClick()

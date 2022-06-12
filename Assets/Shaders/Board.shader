@@ -3,18 +3,19 @@ Shader "Unlit/Board"
     Properties
     {
         _Board ("Texture", 2D) = "white" {}
-        _PainterTexture("Painter Texture", 2D) = "black" {}
-        _CameraPos ("Camera Position", Vector) = (0, 0, 0, 0)
-        _CameraSize("Camera Size", Vector)     = (0, 0, 0, 0)
-        _BoardSize("Board Size", Vector)       = (1,1,1,1)
-        _CellSize("Cell Size", Vector)         = (1, 1, 1, 1)
-        _ClickTime("Click Time", Float)        = 0.0
-        _ClickPos("Click Position", Vector)    = (1, 1, 1, 1)
-        _BackgroundColor("Background Color", Color) = (0.0, 0.0, 0.0, 0.0)
-        _GridColor("Grid Color", Color)        = (0.1,0.1,0.1,1.0)
-        _BorderColor("Border Color", Color)    = (1.0, 1.0, 1.0, 1.0)
+        _PainterTexture       ("Painter Texture", 2D)                  = "black" {}
+        _CameraPos             ("Camera Position", Vector)             = (0, 0, 0, 0)
+        _CameraSize           ("Camera Size", Vector)                  = (0, 0, 0, 0)
+        _BoardSize            ("Board Size", Vector)                   = (1,1,1,1)
+        _CellSize             ("Cell Size", Vector)                    = (1, 1, 1, 1)
+        _ClickTime            ("Click Time", Float)                    = 0.0
+        _ClickPos             ("Click Position", Vector)               = (1, 1, 1, 1)
+        _BackgroundColor      ("Background Color", Color)              = (0.0, 0.0, 0.0, 0.0)
+        _GridColor            ("Grid Color", Color)                    = (0.1,0.1,0.1,1.0)
+        _BorderColor          ("Border Color", Color)                  = (1.0, 1.0, 1.0, 1.0)
         _SelectedCellHighlight("Selected Cell HighLight Color", Color) = (1.0, 1.0, 1.0, 1.0)
-        _MousePos("Mouse Position", Vector)    = (0.0, 0.0, 0.0, 0.0)
+        _MousePos             ("Mouse Position", Vector)               = (0.0, 0.0, 0.0, 0.0)
+        _LastStepTime          ("Last Step Time", Float)               = 0.0
     }
     SubShader
     {
@@ -66,6 +67,8 @@ Shader "Unlit/Board"
 
             float3 _MousePos;
             fixed4 _SelectedCellHighlight;
+
+            float _LastStepTime;
 
             v2f vert (appdata v)
             {
@@ -166,9 +169,11 @@ Shader "Unlit/Board"
                 fixed2 uv_brd = uv_board(i.uv);
                 fixed4 col = txtr_painter(saturate(uv_brd));
 
-                fixed4 board_clr = txtr_board(saturate(uv_brd));
-                float t_brd      = length(board_clr.rgb);
-                t_brd            = step(0.1, t_brd);
+
+                fixed2 board_step = (step(0.0, uv_brd) - step(1.0, uv_brd));
+                float inside_board = min(board_step.x, board_step.y);
+                fixed4 board_clr = txtr_board(saturate(uv_brd)) * inside_board;
+                float t_brd      = step(0.1, length(board_clr.rgb));
                 col = lerp(col, board_clr, t_brd);
                 // saturate(col);
 
@@ -188,6 +193,9 @@ Shader "Unlit/Board"
                 fixed bordr = dst_board_border(uv_brd);
                 clr.rgb = lerp(clr.rgb, _BorderColor.rgb, bordr*_BorderColor.a);
                 // clr += _BorderColor * bordr;
+
+                // clr.rgb = lerp(fixed3(1., 1., 1.)-clr.rgb, clr.rgb, max(saturate((_Time.y - _LastStepTime)*5.),inside_board));
+                clr.rgb += (1. - max(saturate((_Time.y - _LastStepTime)*5.),0.))*0.35*length(clr.rgb);
 
                 //clr = fixed4(i.uv.x, i.uv.y, 0., 1.);
                 //clr = fixed4(uv_brd.x, uv_brd.y, 0., 1.);

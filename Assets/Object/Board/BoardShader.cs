@@ -108,6 +108,7 @@ public class BoardShader : MonoBehaviour
     {
         texture.Apply();
         material.SetTexture("_Board", texture);
+        material.SetFloat("_LastStepTime", Time.time);
 
         if (painter != null && painter.enabled)
             material.SetTexture("_PainterTexture", painter.Painter.Texture);

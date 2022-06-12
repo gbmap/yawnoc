@@ -735,7 +735,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isPlaying: 0
-  stepWait: 0.25
+  stepWait: 0.1
 --- !u!4 &457125394
 Transform:
   m_ObjectHideFlags: 0
@@ -758,7 +758,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 457125392}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 28e1f47014271fde3afc8c1900eceefd, type: 3}
   m_Name: 
@@ -873,7 +873,6 @@ MonoBehaviour:
   AccelerationDamping: 0.35
   Velocity: {x: 0, y: 0, z: 0}
   VelocityDamping: 0.35
-  Zoom: 0
   ZoomAcceleration: 0
   ZoomVelocity: 0
   ZoomDamping: 0.35
@@ -1565,6 +1564,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96ca6551ab206f55eb74202e0221317d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Debug: 0
 --- !u!4 &1328081773
 Transform:
   m_ObjectHideFlags: 0
@@ -1880,7 +1880,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Size: {x: 16, y: 16}
-  Level: {fileID: 11400000, guid: 2f2f6cfa08a4d044c8ee8c3fa11de3a0, type: 2}
+  Level: {fileID: 11400000, guid: 946c1e2c326beb3a7b03640011c59133, type: 2}
   LevelCollection: {fileID: 0}
   Ruleset: {fileID: 11400000, guid: dc17d234f4b6fc611b101bff234d0f06, type: 2}
   Style: {fileID: 11400000, guid: deaf578f38be91a798a4d07605373170, type: 2}
@@ -1929,7 +1929,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Brush: 0
-  behaviour: 1
+  behaviour: 0
 --- !u!4 &1843711824
 Transform:
   m_ObjectHideFlags: 0
