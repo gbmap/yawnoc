@@ -24,6 +24,8 @@ namespace Controls
 
 		UI.UIRoot _uiRoot;
 
+		public bool Debug;
+
 		void OnEnable()
 		{
 			_uiRoot = FindObjectOfType<UI.UIRoot>();
@@ -156,6 +158,9 @@ namespace Controls
 
 		void OnGUI()
 		{
+			if (!Debug)
+				return;
+
 			GUILayout.Label($"{Input.touchCount}");
 			GUILayout.Label($"{clickStartTime}");
 			GUILayout.Label($"{clickEndTime}");

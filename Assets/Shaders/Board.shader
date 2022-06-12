@@ -3,15 +3,17 @@ Shader "Unlit/Board"
     Properties
     {
         _Board ("Texture", 2D) = "white" {}
-        _PainterTexture("Painter Texture", 2D) = "white" {}
+        _PainterTexture("Painter Texture", 2D) = "black" {}
         _CameraPos ("Camera Position", Vector) = (0, 0, 0, 0)
         _CameraSize("Camera Size", Vector)     = (0, 0, 0, 0)
         _BoardSize("Board Size", Vector)       = (1,1,1,1)
         _CellSize("Cell Size", Vector)         = (1, 1, 1, 1)
         _ClickTime("Click Time", Float)        = 0.0
         _ClickPos("Click Position", Vector)    = (1, 1, 1, 1)
+        _BackgroundColor("Background Color", Color) = (0.0, 0.0, 0.0, 0.0)
         _GridColor("Grid Color", Color)        = (0.1,0.1,0.1,1.0)
         _BorderColor("Border Color", Color)    = (1.0, 1.0, 1.0, 1.0)
+        _SelectedCellHighlight("Selected Cell HighLight Color", Color) = (1.0, 1.0, 1.0, 1.0)
         _MousePos("Mouse Position", Vector)    = (0.0, 0.0, 0.0, 0.0)
     }
     SubShader
@@ -56,12 +58,14 @@ Shader "Unlit/Board"
             float2 _CameraPos;
             float2 _CameraSize;
 
+            fixed4 _BackgroundColor;
             fixed4 _GridColor;
             fixed4 _BorderColor;
 
             float2 _SelectedCell; 
 
             float3 _MousePos;
+            fixed4 _SelectedCellHighlight;
 
             v2f vert (appdata v)
             {
@@ -106,9 +110,6 @@ Shader "Unlit/Board"
             float dst_grid(fixed2 uv)
             {
                 fixed2 gridUv = uv*_BoardSize*_CellSize; 
-                //gridUv.y -= _CellSize.y*50.;
-                //gridUv *= _BoardSize * _CellSize;
-                //gridUv = frac(gridUv*_CameraSize);
                 float thickness = fwidth(gridUv);
                 gridUv = frac(gridUv);
                 fixed2 gridD = step(thickness, gridUv);
@@ -135,7 +136,7 @@ Shader "Unlit/Board"
             fixed4 txtr_board(fixed2 board_uv)
             {
                 fixed4 col = tex2D(_Board, board_uv);
-                return col;
+                return max(_BackgroundColor, col);
             }
 
             fixed4 txtr_painter(fixed2 board_uv)
@@ -169,11 +170,11 @@ Shader "Unlit/Board"
                 float t_brd      = length(board_clr.rgb);
                 t_brd            = step(0.1, t_brd);
                 col = lerp(col, board_clr, t_brd);
-                saturate(col);
+                // saturate(col);
 
                 float grid = dst_grid(uv_brd);
                 fixed4 clr = max(col, _GridColor*(1.-grid));
-                 clr = lerp(col, _GridColor,(1.-grid)*(1.-t_brd));
+                clr.rgb = lerp(col.rgb, _GridColor.rgb,(1.-grid)*(1.-t_brd)*_GridColor.a);
 
                 float2 clickPos = uv_board(_MousePos.xy);
                 clickPos = _ClickPos;
@@ -182,10 +183,10 @@ Shader "Unlit/Board"
                 clr = lerp(clr, fixed4(1.,1.,1.,1.), c);
 
                 float hvr = hover(uv_brd, _SelectedCell);
-                clr += fixed4(1.,1.,1.,1.)*hvr;
+                clr.rgb = lerp(clr.rgb, _SelectedCellHighlight.rgb, hvr*_SelectedCellHighlight.a);
 
                 fixed bordr = dst_board_border(uv_brd);
-                clr.xy += _BorderColor * bordr;
+                clr.rgb = lerp(clr.rgb, _BorderColor.rgb, bordr*_BorderColor.a);
                 // clr += _BorderColor * bordr;
 
                 //clr = fixed4(i.uv.x, i.uv.y, 0., 1.);

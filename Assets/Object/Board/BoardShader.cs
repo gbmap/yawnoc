@@ -108,7 +108,9 @@ public class BoardShader : MonoBehaviour
     {
         texture.Apply();
         material.SetTexture("_Board", texture);
-        material.SetTexture("_PainterTexture", painter.Painter.Texture);
+
+        if (painter != null && painter.enabled)
+            material.SetTexture("_PainterTexture", painter.Painter.Texture);
     }
 
     private void Cb_OnClick(OnClick obj)

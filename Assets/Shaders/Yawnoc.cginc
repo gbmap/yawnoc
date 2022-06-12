@@ -247,6 +247,11 @@ float icon_close(fixed2 uv)
                _square(uv.xy, fixed2(1.25, 0.25)));
 }
 
+float icon_empty(fixed2 uv)
+{
+    return 0.;
+}
+
 float draw_icon(float icon, fixed2 uv)
 {
     if (icon < 1.)
@@ -265,5 +270,6 @@ float draw_icon(float icon, fixed2 uv)
         return icon_menu(uv);
     else if (icon < 8.)
         return icon_close(uv);
-    return 0.;
+    else 
+        return 0.;
 }
