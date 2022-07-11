@@ -208,6 +208,11 @@ namespace Conway
 			}
 			Profiler.EndSample();
 		}
+
+		public bool IsInsideBoard(int x, int y)
+		{
+			return x >= 0 && x < Size.x && y >= 0 && y < Size.y;
+		}
 	}
 
 }

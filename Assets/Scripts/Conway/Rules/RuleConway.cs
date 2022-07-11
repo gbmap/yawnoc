@@ -13,25 +13,21 @@ namespace Conway.Rules
 
 		public override ECellType Apply(Board b, int cx, int cy)
 		{
-			// Vector2Int cp = new Vector2Int(cx, cy);
-			// Vector2Int np = new Vector2Int(0, 0);
+
 			int liveNeighbors = 0;
 			for (int ny = -1; ny <= 1; ny++)
 			{
 				for (int nx = -1; nx <= 1; nx++)
 				{
+					// Skip middle cell.
 					if (nx == 0 && ny == 0) 
 						continue;
 
-					// np.x = nx;
-					// np.y = ny;
-					int x = (cx + nx); // % b.Size.x;
-					int y = (cy +ny); // % b.Size.y;
+					int x = (cx+nx); 
+					int y = (cy+ny);
 
-					// Vector2Int pp = cp + np;
-
-					if (x < 0 || x >= b.Size.x ||
-						y < 0 || y >= b.Size.y)
+					// Skip cells outside the board.
+					if (!b.IsInsideBoard(x,y))
 						continue;
 
 					int n = Convert.ToInt32(b.PreviousState.Get(x, y) == Alive);
@@ -39,7 +35,7 @@ namespace Conway.Rules
 				}
 			}
 
-			if (b.PreviousState.Get(cx, cy) == Alive) // alive
+			if (b.PreviousState.Get(cx, cy) == Alive) 
 			{
 				bool alive = (liveNeighbors >= 2 && liveNeighbors <= 3);
 				return  alive ? Alive : Dead;
